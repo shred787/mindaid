@@ -48,6 +48,21 @@ class OpenAIService {
     metadata?: any;
   }> {
     try {
+      // First, check if this message contains a task creation request
+      const taskData = await this.extractTaskFromMessage(content);
+      let createdTask = null;
+
+      if (taskData) {
+        try {
+          createdTask = await storage.createTask({
+            ...taskData,
+            userId: userId
+          });
+        } catch (error) {
+          console.error("Error creating task:", error);
+        }
+      }
+
       // Get recent context
       const recentMessages = await storage.getMessages(userId, 10);
       const todaysTasks = await storage.getTasks(userId, new Date());
@@ -59,6 +74,7 @@ Context:
 - Today's tasks: ${JSON.stringify(todaysTasks.slice(0, 5))}
 - Pending notifications: ${notifications.length}
 - Recent conversation: ${JSON.stringify(recentMessages.slice(-3))}
+${createdTask ? `- Just created task: "${createdTask.title}" scheduled for ${createdTask.scheduledStart}` : ''}
 
 Guidelines:
 - Be concise and actionable
@@ -66,6 +82,7 @@ Guidelines:
 - Suggest specific time blocks and priorities
 - Identify urgent items that need immediate attention
 - Provide encouragement and accountability
+- If you just created a task, acknowledge it and confirm the details
 - If the user mentions completing a task, acknowledge it and suggest next steps
 - If the user needs help, offer to break down complex tasks
 - Always consider the financial impact of recommendations
@@ -85,7 +102,8 @@ Respond in a conversational, professional tone as if you're a dedicated personal
         content: response.choices[0].message.content || "I'm sorry, I couldn't process that request.",
         metadata: {
           tokens_used: response.usage?.total_tokens,
-          model: "gpt-4o"
+          model: "gpt-4o",
+          createdTask: createdTask?.id || null
         }
       };
     } catch (error) {
@@ -94,6 +112,61 @@ Respond in a conversational, professional tone as if you're a dedicated personal
         content: "I'm experiencing some technical difficulties. Let me help you in a moment.",
         metadata: { error: true }
       };
+    }
+  }
+
+  async extractTaskFromMessage(content: string): Promise<any | null> {
+    try {
+      const extractionPrompt = `Analyze this message and determine if the user is requesting to create a task, event, or appointment. If so, extract the relevant information.
+
+Message: "${content}"
+
+If this is a task creation request, respond with JSON in this exact format:
+{
+  "isTask": true,
+  "title": "Brief task title",
+  "description": "Detailed description", 
+  "scheduledStart": "2025-08-01T14:00:00Z" (ISO format, best guess for date/time),
+  "scheduledEnd": "2025-08-01T15:00:00Z" (ISO format, estimated end time),
+  "estimatedMinutes": 60,
+  "priority": 3 (1-5 scale),
+  "revenueImpact": 0 (estimated dollar amount)
+}
+
+If this is NOT a task creation request, respond with:
+{
+  "isTask": false
+}
+
+Keywords that indicate task creation: "add", "schedule", "create", "reminder", "meeting", "appointment", "task", "event", "book", "plan"`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "user", content: extractionPrompt }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 300,
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || '{"isTask": false}');
+      
+      if (result.isTask) {
+        return {
+          title: result.title,
+          description: result.description,
+          scheduledStart: new Date(result.scheduledStart),
+          scheduledEnd: new Date(result.scheduledEnd),
+          estimatedMinutes: result.estimatedMinutes,
+          priority: result.priority,
+          revenueImpact: result.revenueImpact?.toString() || "0"
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error extracting task:", error);
+      return null;
     }
   }
 
