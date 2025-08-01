@@ -160,39 +160,50 @@ Respond in a conversational, professional tone as if you're a dedicated personal
 
   async extractTaskFromMessage(content: string): Promise<any | null> {
     try {
-      const extractionPrompt = `Analyze this message from an ISP business owner and determine the task creation approach needed.
+      const extractionPrompt = `Analyze this ISP business message and categorize the task complexity.
 
 Message: "${content}"
 
-Analyze for:
-1. Simple task: Single action item
-2. Complex project: Multiple phases, dependencies, or technical components
+SCENARIO CLASSIFICATION:
 
-Respond with JSON in this exact format:
+**SIMPLE TASKS** (single action, <2 hours):
+- Individual client calls/meetings
+- Single server restarts/checks
+- One-off billing issues
+- Quick troubleshooting
+- Individual account setups
+
+**COMPLEX PROJECTS** (multiple phases, >2 hours, affects multiple systems/clients):
+- Client migrations (websites, email, hosting)
+- Infrastructure upgrades/rollouts
+- New service implementations
+- Multi-client onboarding
+- System overhauls/replacements
+- Datacenter changes
+- Network expansions
+
+**REVENUE-CRITICAL PROJECTS** (high business impact):
+- Service outages affecting multiple clients
+- Major client onboarding ($1000+ value)
+- Competitive threats requiring immediate response
+- Compliance/security implementations
+
+Respond with JSON:
 {
   "isTask": true/false,
-  "isComplex": true/false (if task involves multiple steps, technical implementation, or business processes),
+  "scenario": "simple"|"complex"|"revenue_critical",
   "title": "Brief task title",
-  "description": "Detailed description", 
-  "scheduledStart": "2025-08-01T14:00:00Z" (ISO format, best guess for date/time),
-  "scheduledEnd": "2025-08-01T15:00:00Z" (ISO format, estimated end time),
+  "description": "Detailed description",
+  "scheduledStart": "2025-08-01T14:00:00Z",
+  "scheduledEnd": "2025-08-01T15:00:00Z",
   "estimatedMinutes": 60,
-  "priority": 3 (1-5 scale),
-  "revenueImpact": 0 (estimated dollar amount),
-  "complexityIndicators": ["list", "of", "reasons", "if", "complex"]
+  "priority": 1-5 (5=urgent, revenue-critical),
+  "revenueImpact": 0,
+  "affectedClients": 0 (estimated number),
+  "businessContext": "brief reason for priority/complexity"
 }
 
-Complex task indicators for ISP business:
-- Migration, implementation, rollout, overhaul, upgrade
-- Multiple clients/systems affected
-- Technical + business components
-- Phrases like "set up new", "migrate all", "complete system", "full implementation"
-- Multi-step processes (testing, deployment, client communication)
-
-If NOT a task creation request:
-{
-  "isTask": false
-}`;
+If NOT a task: {"isTask": false}`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
