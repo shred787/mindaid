@@ -129,7 +129,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTasks(userId: string, date?: Date): Promise<Task[]> {
-    let query = db.select().from(tasks).where(eq(tasks.userId, userId));
+    let conditions = [eq(tasks.userId, userId)];
     
     if (date) {
       const startOfDay = new Date(date);
@@ -137,16 +137,15 @@ export class DatabaseStorage implements IStorage {
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
       
-      query = query.where(
-        and(
-          eq(tasks.userId, userId),
-          gte(tasks.scheduledStart, startOfDay),
-          lte(tasks.scheduledStart, endOfDay)
-        )
+      conditions.push(
+        gte(tasks.scheduledStart, startOfDay),
+        lte(tasks.scheduledStart, endOfDay)
       );
     }
     
-    return await query.orderBy(desc(tasks.priority), tasks.scheduledStart);
+    return await db.select().from(tasks)
+      .where(and(...conditions))
+      .orderBy(desc(tasks.priority), tasks.scheduledStart);
   }
 
   async getTask(id: string): Promise<Task | undefined> {
@@ -191,18 +190,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNotifications(userId: string, acknowledged?: boolean): Promise<Notification[]> {
-    let query = db.select().from(notifications).where(eq(notifications.userId, userId));
+    let conditions = [eq(notifications.userId, userId)];
     
     if (acknowledged !== undefined) {
-      query = query.where(
-        and(
-          eq(notifications.userId, userId),
-          eq(notifications.acknowledged, acknowledged)
-        )
-      );
+      conditions.push(eq(notifications.acknowledged, acknowledged));
     }
     
-    return await query.orderBy(desc(notifications.priority), desc(notifications.createdAt));
+    return await db.select().from(notifications)
+      .where(and(...conditions))
+      .orderBy(desc(notifications.priority), desc(notifications.createdAt));
   }
 
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
