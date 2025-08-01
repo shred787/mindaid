@@ -225,8 +225,10 @@ If NOT a task: {"isTask": false}`;
           estimatedMinutes: result.estimatedMinutes,
           priority: result.priority,
           revenueImpact: result.revenueImpact?.toString() || "0",
-          isComplex: result.isComplex || false,
-          complexityIndicators: result.complexityIndicators || []
+          scenario: result.scenario || "simple",
+          isComplex: result.scenario === "complex" || result.scenario === "revenue_critical",
+          affectedClients: result.affectedClients || 0,
+          businessContext: result.businessContext || ""
         };
 
         return taskData;

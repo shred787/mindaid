@@ -181,6 +181,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint for task complexity detection
+  app.post("/api/test/task-detection", async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      const taskData = await openaiService.extractTaskFromMessage(message);
+      
+      res.json({
+        input: message,
+        detected: taskData ? {
+          isTask: !!taskData,
+          scenario: taskData.scenario,
+          title: taskData.title,
+          priority: taskData.priority,
+          estimatedMinutes: taskData.estimatedMinutes,
+          affectedClients: taskData.affectedClients,
+          businessContext: taskData.businessContext,
+          isComplex: taskData.isComplex
+        } : { isTask: false }
+      });
+    } catch (error) {
+      console.error("Error testing task detection:", error);
+      res.status(500).json({ error: "Failed to test task detection" });
+    }
+  });
+
   // Periodic check-in system (in a real app, this would be handled by a cron job)
   setInterval(async () => {
     try {
