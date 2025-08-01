@@ -51,13 +51,54 @@ class OpenAIService {
       // First, check if this message contains a task creation request
       const taskData = await this.extractTaskFromMessage(content);
       let createdTask = null;
+      let subtasks = [];
 
       if (taskData) {
         try {
-          createdTask = await storage.createTask({
-            ...taskData,
-            userId: userId
-          });
+          if (taskData.isComplex) {
+            // For complex tasks, break them down into subtasks
+            const breakdown = await this.breakDownTask({
+              description: taskData.description,
+              estimatedTime: taskData.estimatedMinutes,
+              revenueImpact: parseFloat(taskData.revenueImpact || "0")
+            });
+
+            // Create parent task
+            createdTask = await storage.createTask({
+              ...taskData,
+              userId: userId,
+              title: `${taskData.title} (Project)`,
+              description: `${taskData.description}\n\nThis project has been broken down into ${breakdown.subtasks.length} subtasks.`
+            });
+
+            // Create subtasks
+            for (let i = 0; i < breakdown.subtasks.length; i++) {
+              const subtask = breakdown.subtasks[i];
+              const subtaskStart = new Date(taskData.scheduledStart);
+              subtaskStart.setHours(subtaskStart.getHours() + (i * 2)); // Space subtasks 2 hours apart
+
+              const subtaskEnd = new Date(subtaskStart);
+              subtaskEnd.setMinutes(subtaskEnd.getMinutes() + subtask.estimatedMinutes);
+
+              const createdSubtask = await storage.createTask({
+                userId: userId,
+                title: subtask.title,
+                description: subtask.description,
+                scheduledStart: subtaskStart,
+                scheduledEnd: subtaskEnd,
+                estimatedMinutes: subtask.estimatedMinutes,
+                priority: subtask.priority,
+                revenueImpact: (parseFloat(taskData.revenueImpact || "0") / breakdown.subtasks.length).toString()
+              });
+              subtasks.push(createdSubtask);
+            }
+          } else {
+            // Simple task - create normally
+            createdTask = await storage.createTask({
+              ...taskData,
+              userId: userId
+            });
+          }
         } catch (error) {
           console.error("Error creating task:", error);
         }
@@ -74,7 +115,7 @@ Context:
 - Today's tasks: ${JSON.stringify(todaysTasks.slice(0, 5))}
 - Pending notifications: ${notifications.length}
 - Recent conversation: ${JSON.stringify(recentMessages.slice(-3))}
-${createdTask ? `- Just created task: "${createdTask.title}" scheduled for ${createdTask.scheduledStart}` : ''}
+${createdTask ? `- Just created task: "${createdTask.title}" scheduled for ${createdTask.scheduledStart}${subtasks.length > 0 ? ` with ${subtasks.length} subtasks` : ''}` : ''}
 
 Guidelines:
 - Be concise and actionable
@@ -103,7 +144,9 @@ Respond in a conversational, professional tone as if you're a dedicated personal
         metadata: {
           tokens_used: response.usage?.total_tokens,
           model: "gpt-4o",
-          createdTask: createdTask?.id || null
+          createdTask: createdTask?.id || null,
+          subtasks: subtasks.map(t => t.id),
+          isComplexProject: subtasks.length > 0
         }
       };
     } catch (error) {
@@ -117,28 +160,39 @@ Respond in a conversational, professional tone as if you're a dedicated personal
 
   async extractTaskFromMessage(content: string): Promise<any | null> {
     try {
-      const extractionPrompt = `Analyze this message and determine if the user is requesting to create a task, event, or appointment. If so, extract the relevant information.
+      const extractionPrompt = `Analyze this message from an ISP business owner and determine the task creation approach needed.
 
 Message: "${content}"
 
-If this is a task creation request, respond with JSON in this exact format:
+Analyze for:
+1. Simple task: Single action item
+2. Complex project: Multiple phases, dependencies, or technical components
+
+Respond with JSON in this exact format:
 {
-  "isTask": true,
+  "isTask": true/false,
+  "isComplex": true/false (if task involves multiple steps, technical implementation, or business processes),
   "title": "Brief task title",
   "description": "Detailed description", 
   "scheduledStart": "2025-08-01T14:00:00Z" (ISO format, best guess for date/time),
   "scheduledEnd": "2025-08-01T15:00:00Z" (ISO format, estimated end time),
   "estimatedMinutes": 60,
   "priority": 3 (1-5 scale),
-  "revenueImpact": 0 (estimated dollar amount)
+  "revenueImpact": 0 (estimated dollar amount),
+  "complexityIndicators": ["list", "of", "reasons", "if", "complex"]
 }
 
-If this is NOT a task creation request, respond with:
+Complex task indicators for ISP business:
+- Migration, implementation, rollout, overhaul, upgrade
+- Multiple clients/systems affected
+- Technical + business components
+- Phrases like "set up new", "migrate all", "complete system", "full implementation"
+- Multi-step processes (testing, deployment, client communication)
+
+If NOT a task creation request:
 {
   "isTask": false
-}
-
-Keywords that indicate task creation: "add", "schedule", "create", "reminder", "meeting", "appointment", "task", "event", "book", "plan"`;
+}`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -146,21 +200,25 @@ Keywords that indicate task creation: "add", "schedule", "create", "reminder", "
           { role: "user", content: extractionPrompt }
         ],
         response_format: { type: "json_object" },
-        max_tokens: 300,
+        max_tokens: 400,
       });
 
       const result = JSON.parse(response.choices[0].message.content || '{"isTask": false}');
       
       if (result.isTask) {
-        return {
+        const taskData = {
           title: result.title,
           description: result.description,
           scheduledStart: new Date(result.scheduledStart),
           scheduledEnd: new Date(result.scheduledEnd),
           estimatedMinutes: result.estimatedMinutes,
           priority: result.priority,
-          revenueImpact: result.revenueImpact?.toString() || "0"
+          revenueImpact: result.revenueImpact?.toString() || "0",
+          isComplex: result.isComplex || false,
+          complexityIndicators: result.complexityIndicators || []
         };
+
+        return taskData;
       }
 
       return null;
