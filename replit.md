@@ -1,6 +1,6 @@
 # Overview
 
-This is a full-stack AI-powered personal assistant application built with React, Express, and PostgreSQL. The application serves as an intelligent task management and productivity platform that provides real-time assistance through voice commands, chat interface, and smart scheduling capabilities. It features multiple view modes including chat, calendar, timeline, and cash flow visualizations to help users manage their work and revenue streams effectively.
+This is a full-stack AI-powered business assistant application built with React, Express, and PostgreSQL. The application serves as an intelligent task management and productivity platform that provides real-time assistance through voice commands, chat interface, and smart scheduling capabilities. It features multiple view modes including chat, calendar, timeline, and cash flow visualizations to help business owners manage their work and revenue streams effectively.
 
 ## Current Status (August 2, 2025)
 - ✅ Application fully functional and running on port 5000
@@ -11,16 +11,16 @@ This is a full-stack AI-powered personal assistant application built with React,
 - ✅ All TypeScript compilation errors resolved
 - ✅ Chat interface operational with message persistence
 - ✅ **MAJOR:** Complex task detection system fully implemented and tested
-- ✅ **MAJOR:** Automatic subtask breakdown for complex ISP projects 
+- ✅ **MAJOR:** Automatic subtask breakdown for complex business projects 
 - ✅ **MAJOR:** Database integration complete - all data persists in PostgreSQL
-- ✅ **MAJOR:** Real-world testing completed with 100% accuracy on ISP scenarios
+- ✅ **MAJOR:** Real-world testing completed with 100% accuracy on business scenarios
 
 ## Recent Achievements (August 2, 2025)
 - **Complex Task Detection:** System now intelligently categorizes tasks as simple, complex, or revenue-critical
-- **Automatic Project Breakdown:** Complex tasks like "migrate all client websites" automatically generate 10+ detailed subtasks
+- **Automatic Project Breakdown:** Complex tasks automatically generate detailed subtasks with proper scheduling
 - **Smart Scheduling:** Tasks are automatically scheduled with realistic time estimates and priority levels
 - **Database Migration:** Moved from in-memory storage to persistent PostgreSQL database
-- **ISP-Specific Intelligence:** Tuned for ISP business scenarios including migrations, outages, and client management
+- **Business Intelligence:** Tuned for general business scenarios including client management, process improvements, and project execution
 - **Testing Validation:** Validated with real scenarios showing perfect detection and breakdown accuracy
 
 # User Preferences

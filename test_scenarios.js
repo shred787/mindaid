@@ -1,58 +1,58 @@
-// Test scenarios for complex task detection
+// Test scenarios for complex task detection - General Business
 const testScenarios = [
   // SIMPLE TASKS
   {
-    input: "Call John about his billing issue tomorrow at 2pm",
+    input: "Call Sarah about the quarterly budget meeting tomorrow at 2pm",
     expected: "simple",
-    description: "Individual client call"
+    description: "Individual client/team call"
   },
   {
-    input: "Restart the mail server this evening",
+    input: "Update the employee handbook with new vacation policy",
     expected: "simple", 
-    description: "Single server action"
+    description: "Single document update"
   },
   {
-    input: "Update Sarah's hosting account password",
+    input: "Send invoice to Johnson Construction for last month's work",
     expected: "simple",
-    description: "One-off account change"
+    description: "One-off administrative task"
   },
 
   // COMPLEX PROJECTS  
   {
-    input: "We need to migrate all our client websites from the old server to the new hosting platform",
+    input: "We need to implement a new customer management system across all departments",
     expected: "complex",
-    description: "Multi-client migration project"
+    description: "Multi-department system implementation"
   },
   {
-    input: "Set up the new email hosting service for all business clients",
+    input: "Launch our new product line with marketing campaign and staff training",
     expected: "complex", 
-    description: "New service rollout"
+    description: "Product launch with multiple components"
   },
   {
-    input: "Upgrade our entire network infrastructure to support higher bandwidth",
+    input: "Reorganize the entire warehouse operations and inventory system",
     expected: "complex",
-    description: "Infrastructure overhaul"
+    description: "Process overhaul affecting operations"
   },
 
   // REVENUE-CRITICAL
   {
-    input: "The main server is down and affecting 50+ client websites - need immediate action",
+    input: "Major client threatening to cancel $50K contract - need immediate response",
     expected: "revenue_critical",
-    description: "Service outage emergency"
+    description: "High-value client retention crisis"
   },
   {
-    input: "Major enterprise client wants to onboard 100 domains by Friday or they'll go with competitor",
+    input: "Competitor just launched identical product - we need strategic response by Friday",
     expected: "revenue_critical", 
-    description: "High-value competitive threat"
+    description: "Competitive threat with deadline"
   },
   {
-    input: "Implement SSL certificates for all client sites to meet new compliance requirements",
+    input: "Compliance audit next week - missing documentation could result in penalties",
     expected: "revenue_critical",
-    description: "Compliance deadline"
+    description: "Regulatory compliance deadline"
   }
 ];
 
-console.log("Test scenarios ready for validation:");
+console.log("Updated test scenarios for general business:");
 testScenarios.forEach((scenario, i) => {
   console.log(`\n${i+1}. ${scenario.description}`);
   console.log(`   Input: "${scenario.input}"`);

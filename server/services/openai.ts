@@ -160,7 +160,7 @@ Respond in a conversational, professional tone as if you're a dedicated personal
 
   async extractTaskFromMessage(content: string): Promise<any | null> {
     try {
-      const extractionPrompt = `Analyze this ISP business message and categorize the task complexity.
+      const extractionPrompt = `Analyze this business message and categorize the task complexity.
 
 Message: "${content}"
 
@@ -168,25 +168,27 @@ SCENARIO CLASSIFICATION:
 
 **SIMPLE TASKS** (single action, <2 hours):
 - Individual client calls/meetings
-- Single server restarts/checks
-- One-off billing issues
+- Single document updates
+- One-off administrative tasks
 - Quick troubleshooting
-- Individual account setups
+- Individual account management
+- Basic email responses
 
-**COMPLEX PROJECTS** (multiple phases, >2 hours, affects multiple systems/clients):
-- Client migrations (websites, email, hosting)
-- Infrastructure upgrades/rollouts
-- New service implementations
-- Multi-client onboarding
-- System overhauls/replacements
-- Datacenter changes
-- Network expansions
+**COMPLEX PROJECTS** (multiple phases, >2 hours, affects multiple areas):
+- System implementations or migrations
+- Multi-client rollouts
+- Process overhauls
+- Infrastructure changes
+- Product launches
+- Large-scale reorganizations
+- Training programs
 
 **REVENUE-CRITICAL PROJECTS** (high business impact):
-- Service outages affecting multiple clients
-- Major client onboarding ($1000+ value)
+- Major client projects ($1000+ value)
 - Competitive threats requiring immediate response
-- Compliance/security implementations
+- Compliance deadlines
+- Crisis management situations
+- Time-sensitive opportunities
 
 Respond with JSON:
 {
