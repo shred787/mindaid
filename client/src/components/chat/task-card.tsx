@@ -22,7 +22,7 @@ export function TaskCard({
   onTaskUpdate, 
   onSubtaskToggle 
 }: TaskCardProps) {
-  const revenueAmount = Number(task.revenueImpact) || 0;
+  // Revenue tracking removed - focus on pure productivity
   const totalMinutes = task.estimatedMinutes || 0;
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;

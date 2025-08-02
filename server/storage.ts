@@ -60,7 +60,6 @@ export interface IStorage {
   // Analytics
   getDailyOverview(userId: string, date: Date): Promise<{
     taskCount: number;
-    potentialRevenue: number;
     urgentTasks: number;
     completedTasks: number;
     overdueCheckIns: number;
