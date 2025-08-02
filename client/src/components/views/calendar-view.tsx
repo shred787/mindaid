@@ -148,6 +148,7 @@ export function CalendarView() {
                         <Checkbox
                           checked={task.completed}
                           onCheckedChange={(checked) => {
+                            console.log("Checkbox clicked:", task.id, checked);
                             updateTaskMutation.mutate({
                               taskId: task.id,
                               updates: { completed: checked as boolean }
