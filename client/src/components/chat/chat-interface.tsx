@@ -152,8 +152,8 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
             <div className="flex-1">
               <div className="bg-gray-100 rounded-xl rounded-tl-sm p-2 sm:p-3 max-w-xs">
                 <p className="text-sm text-gray-800">
-                  Good morning! I'm here to help you manage your tasks and maximize your productivity. 
-                  What would you like to work on today?
+                  Ready to work. I'm your accountability partner - here to eliminate unproductive activities and drive results. 
+                  What's your priority objective today?
                 </p>
               </div>
               <p className="text-xs text-gray-500 mt-1">
