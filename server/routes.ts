@@ -66,51 +66,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
-      // Challenge task/project completion attempts  
-      if (updates.completed === true && !updates.forceComplete) {
+      // Evidence-based completion validation - ALL task completions require evidence
+      if (updates.completed === true && !req.body.evidence) {
         const currentTask = await storage.getTask(id);
-        if (currentTask) {
-          const subtasks = await storage.getTasks(demoUser.id);
-          const projectSubtasks = subtasks.filter(t => t.projectId === id);
-          const incompleteSubtasks = projectSubtasks.filter(t => !t.completed);
-          
-          // Challenge project completion with incomplete subtasks
-          if (projectSubtasks.length > 0 && incompleteSubtasks.length > 0) {
-            const challengeResponse = await openaiService.challengeProjectCompletion({
-              projectTitle: currentTask.title,
-              incompleteSubtasks: incompleteSubtasks.map(t => ({
-                title: t.title,
-                priority: t.priority,
-                estimatedMinutes: t.estimatedMinutes || 0
-              })),
-              totalSubtasks: projectSubtasks.length,
-              completedSubtasks: projectSubtasks.length - incompleteSubtasks.length
-            });
-            
-            return res.status(409).json({ 
-              error: "Project completion challenge",
-              challenge: challengeResponse,
-              requiresJustification: true
-            });
-          }
-          
-          // Challenge individual task completion (random 40% chance for accountability)
-          if (projectSubtasks.length === 0 && Math.random() < 0.4) {
-            const challengeResponse = await openaiService.challengeTaskCompletion({
-              taskTitle: currentTask.title,
-              taskDescription: currentTask.description || undefined,
-              estimatedMinutes: currentTask.estimatedMinutes || undefined,
-              priority: currentTask.priority,
-              actualMinutes: currentTask.actualMinutes || undefined
-            });
-            
-            return res.status(409).json({ 
-              error: "Task completion challenge",
-              challenge: challengeResponse,
-              requiresJustification: true
-            });
-          }
-        }
+        return res.status(409).json({ 
+          error: "Evidence required",
+          requiresEvidence: true,
+          taskTitle: currentTask?.title || "Task"
+        });
+      }
+      
+      // If evidence is provided with completion, add it to the updates
+      if (updates.completed === true && req.body.evidence) {
+        updates.completionEvidence = req.body.evidence;
       }
       
       const task = await storage.updateTask(id, updates);

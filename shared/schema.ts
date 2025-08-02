@@ -50,6 +50,7 @@ export const tasks = pgTable("tasks", {
   scheduledStart: timestamp("scheduled_start"),
   scheduledEnd: timestamp("scheduled_end"),
   completed: boolean("completed").default(false).notNull(),
+  completionEvidence: jsonb("completion_evidence"), // Evidence of task completion
   createdAt: timestamp("created_at").default(sql`now()`).notNull(),
   updatedAt: timestamp("updated_at").default(sql`now()`).notNull(),
 });
