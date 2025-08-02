@@ -33,7 +33,7 @@ export function TaskCard({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+    <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
       {/* Task Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
@@ -41,21 +41,17 @@ export function TaskCard({
             checked={task.completed}
             onCheckedChange={handleCompleteTask}
           />
-          <h4 className="font-semibold text-gray-800 flex items-center">
+          <h4 className="font-semibold text-card-foreground flex items-center">
             <Target className="text-primary mr-2 h-4 w-4" />
             {task.title}
           </h4>
         </div>
-        {revenueAmount > 0 && (
-          <Badge className="bg-success hover:bg-success text-white">
-            ${revenueAmount.toLocaleString()}
-          </Badge>
-        )}
+
       </div>
 
       {/* Task Description */}
       {task.description && (
-        <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+        <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
       )}
 
       {/* Subtasks */}
@@ -64,7 +60,7 @@ export function TaskCard({
           {subtasks.map((subtask, index) => (
             <div
               key={index}
-              className="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg"
+              className="flex items-center space-x-3 p-2 bg-muted/50 rounded-lg"
             >
               <Checkbox
                 checked={subtask.completed || false}
@@ -72,11 +68,11 @@ export function TaskCard({
               />
               <span className={cn(
                 "text-sm flex-1",
-                subtask.completed ? "line-through text-gray-500" : "text-gray-700"
+                subtask.completed ? "line-through text-muted-foreground" : "text-foreground"
               )}>
                 {subtask.title}
               </span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {subtask.estimatedMinutes}m
               </span>
             </div>
@@ -85,10 +81,10 @@ export function TaskCard({
       )}
 
       {/* Task Footer */}
-      <div className="pt-3 border-t border-gray-200">
+      <div className="pt-3 border-t border-border">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center space-x-4">
-            <span className="text-gray-600 flex items-center">
+            <span className="text-muted-foreground flex items-center">
               <Clock className="h-4 w-4 mr-1" />
               {timeString}
             </span>
@@ -100,7 +96,7 @@ export function TaskCard({
           </div>
           <div className="flex items-center space-x-2">
             {task.scheduledStart && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {new Date(task.scheduledStart).toLocaleTimeString("en-US", {
                   hour: "numeric",
                   minute: "2-digit",

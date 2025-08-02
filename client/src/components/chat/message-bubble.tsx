@@ -22,12 +22,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       {/* Avatar */}
       <div className={cn(
         "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-        isUser ? "bg-gray-300" : "bg-primary"
+        isUser ? "bg-muted" : "bg-primary"
       )}>
         {isUser ? (
-          <User className="text-gray-600 text-sm" />
+          <User className="text-muted-foreground text-sm" />
         ) : (
-          <Bot className="text-white text-sm" />
+          <Bot className="text-primary-foreground text-sm" />
         )}
       </div>
 
@@ -36,13 +36,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <div className={cn(
           "rounded-xl p-3 max-w-xs",
           isUser 
-            ? "bg-primary text-white rounded-tr-sm ml-auto" 
-            : "bg-gray-100 text-gray-800 rounded-tl-sm"
+            ? "bg-primary text-primary-foreground rounded-tr-sm ml-auto" 
+            : "bg-muted text-muted-foreground rounded-tl-sm"
         )}>
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className={cn(
-          "text-xs text-gray-500 mt-1",
+          "text-xs text-muted-foreground mt-1",
           isUser ? "text-right" : ""
         )}>
           {timestamp}

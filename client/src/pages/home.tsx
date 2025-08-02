@@ -84,7 +84,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full max-w-none sm:max-w-md mx-auto bg-white min-h-screen shadow-none sm:shadow-xl relative">
+    <div className="w-full max-w-none sm:max-w-md mx-auto bg-background min-h-screen shadow-none sm:shadow-xl relative">
       <HardAlertOverlay />
       <AppHeader />
       <ViewSelector currentView={currentView} onViewChange={setCurrentView} />
