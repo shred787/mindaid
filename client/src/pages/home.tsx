@@ -50,7 +50,7 @@ export default function Home() {
   const renderCurrentView = () => {
     switch (currentView) {
       case "chat":
-        return <ChatInterface />;
+        return <ChatInterface onNavigate={setCurrentView} />;
       case "calendar":
         return <CalendarView />;
       case "gantt":
@@ -62,7 +62,7 @@ export default function Home() {
       case "accountability":
         return <CheckInSystem />;
       default:
-        return <ChatInterface />;
+        return <ChatInterface onNavigate={setCurrentView} />;
     }
   };
 

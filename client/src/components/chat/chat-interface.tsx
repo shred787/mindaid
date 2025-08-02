@@ -6,11 +6,15 @@ import { AlertCard } from "./alert-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { ChatMessage, DailyOverview } from "@/types";
+import { ChatMessage, DailyOverview, ViewMode } from "@/types";
 import { Task, Message } from "@shared/schema";
 import { Calendar, Target, TrendingUp } from "lucide-react";
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onNavigate?: (view: ViewMode) => void;
+}
+
+export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
   const queryClient = useQueryClient();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [currentDate] = useState(new Date());
@@ -185,8 +189,8 @@ export function ChatInterface() {
             action={{
               label: "View Tasks",
               onClick: () => {
-                // Handle navigation to task view
-                console.log("Navigate to urgent tasks");
+                // Navigate to calendar view to see tasks
+                onNavigate?.("calendar");
               },
             }}
           />
