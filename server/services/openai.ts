@@ -54,13 +54,39 @@ class OpenAIService {
       let subtasks = [];
 
       if (taskData) {
+        // Check if essential information is missing and prompt user for details
+        if (taskData.missingInfo && (
+          taskData.missingInfo.needsDueDate || 
+          taskData.missingInfo.needsRequirements || 
+          taskData.missingInfo.needsPriority ||
+          taskData.missingInfo.needsTimeline
+        )) {
+          // Don't create the task yet - prompt for more information
+          const questions = taskData.missingInfo.requiredQuestions || [];
+          const promptMessage = `I've identified a ${taskData.scenario} task: "${taskData.title}".
+
+To ensure optimal planning and execution, I need some additional details:
+
+${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+
+Please provide these details so I can create a comprehensive task plan with proper scheduling and priority setting.`;
+          
+          return {
+            content: promptMessage,
+            metadata: {
+              taskPending: true,
+              pendingTaskData: taskData
+            }
+          };
+        }
+
         try {
           if (taskData.isComplex) {
             // For complex tasks, break them down into subtasks
             const breakdown = await this.breakDownTask({
               description: taskData.description,
               estimatedTime: taskData.estimatedMinutes,
-              revenueImpact: parseFloat(taskData.revenueImpact || "0")
+              priority: taskData.priority
             });
 
             // Create parent task
@@ -88,7 +114,7 @@ class OpenAIService {
                 scheduledEnd: subtaskEnd,
                 estimatedMinutes: subtask.estimatedMinutes,
                 priority: subtask.priority,
-                revenueImpact: (parseFloat(taskData.revenueImpact || "0") / breakdown.subtasks.length).toString()
+                revenueImpact: "0" // Removed revenue tracking
               });
               subtasks.push(createdSubtask);
             }
@@ -109,7 +135,7 @@ class OpenAIService {
       const todaysTasks = await storage.getTasks(userId, new Date());
       const notifications = await storage.getNotifications(userId, false);
 
-      const systemPrompt = `You are an AI business assistant helping a service business owner manage their tasks and cash flow. You are proactive, helpful, and focused on productivity and revenue optimization.
+      const systemPrompt = `You are an AI business assistant helping a service business owner manage their tasks with LASER FOCUS on productivity and accountability. You are proactive, thorough, and demand excellence in task planning and execution.
 
 Context:
 - Today's tasks: ${JSON.stringify(todaysTasks.slice(0, 5))}
@@ -117,18 +143,27 @@ Context:
 - Recent conversation: ${JSON.stringify(recentMessages.slice(-3))}
 ${createdTask ? `- Just created task: "${createdTask.title}" scheduled for ${createdTask.scheduledStart}${subtasks.length > 0 ? ` with ${subtasks.length} subtasks` : ''}` : ''}
 
-Guidelines:
-- Be concise and actionable
-- Focus on task completion and revenue impact
-- Suggest specific time blocks and priorities
-- Identify urgent items that need immediate attention
-- Provide encouragement and accountability
-- If you just created a task, acknowledge it and confirm the details
-- If the user mentions completing a task, acknowledge it and suggest next steps
-- If the user needs help, offer to break down complex tasks
-- Always consider the financial impact of recommendations
+CRITICAL: When users mention work to be done, you MUST be proactive and gather ALL essential details:
 
-Respond in a conversational, professional tone as if you're a dedicated personal assistant.`;
+**MANDATORY INFORMATION GATHERING:**
+- Due date/deadline: "When does this need to be completed?"
+- Specific requirements: "What are the exact deliverables and success criteria?"
+- Priority level: "How urgent is this compared to other work?"
+- Timeline expectations: "How much time do you have available for this?"
+- Dependencies: "What needs to happen first or who else is involved?"
+
+**DO NOT CREATE INCOMPLETE TASKS.** If critical information is missing:
+1. Ask specific, direct questions to gather missing details
+2. Explain why each detail is important for proper planning
+3. Only create tasks once you have comprehensive information
+
+For task completion, always enforce STRICT EVIDENCE COLLECTION:
+- NO generic responses like "I finished it" or "It's done"
+- REQUIRE tangible proof: screenshots, documents, PDFs, emails, call logs, detailed descriptions
+- REJECT completion attempts without substantial evidence
+- DEMAND specific details about what was accomplished
+
+Be direct, thorough, and uncompromising about gathering complete information. Better to ask 3-5 clarifying questions upfront than create poorly planned tasks.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -183,26 +218,39 @@ SCENARIO CLASSIFICATION:
 - Large-scale reorganizations
 - Training programs
 
-**REVENUE-CRITICAL PROJECTS** (high business impact):
-- Major client projects ($1000+ value)
-- Competitive threats requiring immediate response
-- Compliance deadlines
-- Crisis management situations
-- Time-sensitive opportunities
+**PRIORITY-BASED ASSESSMENT** (replacing revenue impact):
+- Priority 5: Urgent deadlines, critical business needs
+- Priority 4: Important projects with tight timelines
+- Priority 3: Standard business operations
+- Priority 2: Maintenance and optimization
+- Priority 1: Nice-to-have improvements
+
+**MISSING INFORMATION DETECTION:**
+Check if the user provided sufficient details for task creation:
+- Due date/deadline specified?
+- Specific requirements/scope defined?
+- Priority/urgency indicated?
+- Timeline expectations mentioned?
 
 Respond with JSON:
 {
   "isTask": true/false,
-  "scenario": "simple"|"complex"|"revenue_critical",
+  "scenario": "simple"|"complex"|"priority_critical",
   "title": "Brief task title",
   "description": "Detailed description",
-  "scheduledStart": "2025-08-01T14:00:00Z",
-  "scheduledEnd": "2025-08-01T15:00:00Z",
+  "scheduledStart": "2025-08-01T14:00:00Z" (if specified or reasonable default),
+  "scheduledEnd": "2025-08-01T15:00:00Z" (if specified or reasonable default),
   "estimatedMinutes": 60,
-  "priority": 1-5 (5=urgent, revenue-critical),
-  "revenueImpact": 0,
+  "priority": 1-5 (5=urgent, priority-critical),
   "affectedClients": 0 (estimated number),
-  "businessContext": "brief reason for priority/complexity"
+  "businessContext": "brief reason for priority/complexity",
+  "missingInfo": {
+    "needsDueDate": true/false,
+    "needsRequirements": true/false,
+    "needsPriority": true/false,
+    "needsTimeline": true/false,
+    "requiredQuestions": ["What's the deadline?", "What specific requirements?", etc.]
+  }
 }
 
 If NOT a task: {"isTask": false}`;
@@ -226,11 +274,12 @@ If NOT a task: {"isTask": false}`;
           scheduledEnd: new Date(result.scheduledEnd),
           estimatedMinutes: result.estimatedMinutes,
           priority: result.priority,
-          revenueImpact: result.revenueImpact?.toString() || "0",
+          revenueImpact: "0", // Removed revenue tracking
           scenario: result.scenario || "simple",
-          isComplex: result.scenario === "complex" || result.scenario === "revenue_critical",
+          isComplex: result.scenario === "complex" || result.scenario === "priority_critical",
           affectedClients: result.affectedClients || 0,
-          businessContext: result.businessContext || ""
+          businessContext: result.businessContext || "",
+          missingInfo: result.missingInfo || null
         };
 
         return taskData;
@@ -249,7 +298,7 @@ If NOT a task: {"isTask": false}`;
 
 Task: ${request.description}
 Estimated time: ${request.estimatedTime || 'not specified'} minutes
-Revenue impact: $${request.revenueImpact || 'not specified'}
+Priority level: ${request.priority || 'not specified'} (1-5 scale)
 
 Please provide a JSON response with the following structure:
 {
@@ -269,7 +318,7 @@ Focus on:
 - Breaking complex tasks into 15-45 minute chunks
 - Logical order of completion
 - Realistic time estimates
-- Revenue-focused prioritization`;
+- Priority-based task organization`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",

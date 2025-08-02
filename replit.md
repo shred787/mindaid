@@ -32,6 +32,8 @@ This is a full-stack AI-powered productivity and accountability system built wit
 - **Streamlined Interface:** Clean, focused views for pure task management needs
 - **Real-time Notifications:** WebSocket-powered live updates for emergency situations
 - **Business-Agnostic Design:** Validated across multiple industry scenarios with 100% accuracy
+- **Proactive AI Assistant:** Enhanced task creation workflow that demands comprehensive details before creating tasks
+- **Smart Information Gathering:** AI now prompts for missing critical information (due dates, requirements, priorities) instead of creating incomplete tasks
 
 # User Preferences
 
