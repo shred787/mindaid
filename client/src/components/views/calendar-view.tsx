@@ -4,9 +4,13 @@ import { DayPicker } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@shared/schema";
-import { Clock, DollarSign, Calendar, Eye, CheckCircle, Circle } from "lucide-react";
+import { Clock, DollarSign, Calendar, CheckCircle, Circle, Edit3, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import "react-day-picker/dist/style.css";
 
@@ -14,6 +18,8 @@ export function CalendarView() {
   // Initialize with August 1st, 2025 since that's when the tasks are scheduled
   const [selectedDate, setSelectedDate] = useState<Date>(new Date('2025-08-01'));
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Task>>({});
   const queryClient = useQueryClient();
 
   const { data: tasks = [] } = useQuery<Task[]>({
@@ -29,6 +35,45 @@ export function CalendarView() {
       queryClient.invalidateQueries({ queryKey: ["/api/overview"] });
     },
   });
+
+  // Function to find related subtasks for a project
+  const getSubtasks = (parentTask: Task) => {
+    if (!parentTask.title.includes("(Project)")) return [];
+    
+    // Find tasks that are related to this project based on title matching and timing
+    const projectName = parentTask.title.replace(" (Project)", "");
+    return tasks.filter(task => 
+      task.id !== parentTask.id && 
+      task.scheduledStart &&
+      parentTask.scheduledStart &&
+      parentTask.scheduledEnd &&
+      new Date(task.scheduledStart) >= new Date(parentTask.scheduledStart) &&
+      new Date(task.scheduledStart) <= new Date(parentTask.scheduledEnd)
+    );
+  };
+
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
+    setEditForm({
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      estimatedMinutes: task.estimatedMinutes,
+      status: task.status,
+      revenueImpact: task.revenueImpact
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingTask) return;
+    
+    updateTaskMutation.mutate({
+      taskId: editingTask.id,
+      updates: editForm
+    });
+    setEditingTask(null);
+    setEditForm({});
+  };
 
   const tasksForSelectedDate = tasks.filter(task => {
     if (!task.scheduledStart) return false;
@@ -223,6 +268,52 @@ export function CalendarView() {
                           </div>
                         </div>
 
+                        {/* Subtasks Section */}
+                        {(() => {
+                          const subtasks = getSubtasks(task);
+                          return subtasks.length > 0 ? (
+                            <div>
+                              <h3 className="font-medium text-sm text-gray-700 mb-2">
+                                Subtasks ({subtasks.filter(st => st.completed).length}/{subtasks.length} complete)
+                              </h3>
+                              <div className="space-y-2">
+                                {subtasks.map((subtask) => (
+                                  <div
+                                    key={subtask.id}
+                                    className="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg"
+                                  >
+                                    <Checkbox
+                                      checked={subtask.completed}
+                                      onCheckedChange={(checked) => {
+                                        updateTaskMutation.mutate({
+                                          taskId: subtask.id,
+                                          updates: { completed: checked as boolean }
+                                        });
+                                      }}
+                                    />
+                                    <div className="flex-1">
+                                      <span className={`text-sm ${subtask.completed ? "line-through text-gray-500" : "text-gray-700"}`}>
+                                        {subtask.title}
+                                      </span>
+                                      {subtask.description && (
+                                        <p className="text-xs text-gray-500 mt-1">{subtask.description}</p>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {subtask.estimatedMinutes}m
+                                    </div>
+                                    {subtask.priority >= 4 && (
+                                      <Badge variant="destructive" className="text-xs">
+                                        Urgent
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
+
                         {/* Schedule Information */}
                         {task.scheduledStart && (
                           <div>
@@ -250,7 +341,7 @@ export function CalendarView() {
                           >
                             {task.completed ? "Mark Incomplete" : "Mark Complete"}
                           </Button>
-                          <Button variant="outline">
+                          <Button variant="outline" onClick={() => handleEdit(task)}>
                             Edit Task
                           </Button>
                         </div>
@@ -262,6 +353,109 @@ export function CalendarView() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Task Dialog */}
+      <Dialog open={!!editingTask} onOpenChange={() => setEditingTask(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogDescription>
+              Update the task details below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Title</label>
+              <Input
+                value={editForm.title || ""}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                placeholder="Task title"
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                value={editForm.description || ""}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder="Task description"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Priority (1-5)</label>
+                <Select
+                  value={editForm.priority?.toString() || ""}
+                  onValueChange={(value) => setEditForm({ ...editForm, priority: parseInt(value) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 - Low</SelectItem>
+                    <SelectItem value="2">2 - Normal</SelectItem>
+                    <SelectItem value="3">3 - Medium</SelectItem>
+                    <SelectItem value="4">4 - High</SelectItem>
+                    <SelectItem value="5">5 - Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Status</label>
+                <Select
+                  value={editForm.status || ""}
+                  onValueChange={(value) => setEditForm({ ...editForm, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="blocked">Blocked</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Estimated Minutes</label>
+                <Input
+                  type="number"
+                  value={editForm.estimatedMinutes || ""}
+                  onChange={(e) => setEditForm({ ...editForm, estimatedMinutes: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Revenue Impact ($)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editForm.revenueImpact || ""}
+                  onChange={(e) => setEditForm({ ...editForm, revenueImpact: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-2 pt-4">
+              <Button onClick={handleSaveEdit} disabled={updateTaskMutation.isPending}>
+                {updateTaskMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+              <Button variant="outline" onClick={() => setEditingTask(null)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
