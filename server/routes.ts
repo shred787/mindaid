@@ -57,7 +57,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const task = await storage.createTask(taskData);
       res.json(task);
     } catch (error) {
-      res.status(400).json({ error: "Invalid task data" });
+      console.error("Task validation error:", error);
+      res.status(400).json({ error: "Invalid task data", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -283,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(entry);
     } catch (error) {
       console.error("Revenue validation error:", error);
-      res.status(400).json({ error: "Invalid revenue entry data", details: error.message });
+      res.status(400).json({ error: "Invalid revenue entry data", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -322,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(checkIn);
     } catch (error) {
       console.error("Check-in validation error:", error);
-      res.status(400).json({ error: "Invalid check-in data", details: error.message });
+      res.status(400).json({ error: "Invalid check-in data", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
