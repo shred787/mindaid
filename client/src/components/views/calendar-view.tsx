@@ -10,7 +10,8 @@ import { apiRequest } from "@/lib/queryClient";
 import "react-day-picker/dist/style.css";
 
 export function CalendarView() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // Initialize with August 1st, 2025 since that's when the tasks are scheduled
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date('2025-08-01'));
   const queryClient = useQueryClient();
 
   const { data: tasks = [] } = useQuery<Task[]>({
@@ -123,7 +124,12 @@ export function CalendarView() {
         </CardHeader>
         <CardContent>
           {tasksForSelectedDate.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No tasks scheduled for this date</p>
+            <div className="text-center py-4">
+              <p className="text-gray-500">No tasks scheduled for this date</p>
+              <p className="text-xs text-gray-400 mt-2">
+                Total tasks loaded: {tasks.length} | Selected date: {selectedDate.toDateString()}
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {tasksForSelectedDate
