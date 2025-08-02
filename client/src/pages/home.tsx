@@ -6,12 +6,13 @@ import { VoiceInputBar } from "@/components/layout/voice-input-bar";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { CalendarView } from "@/components/views/calendar-view";
 import { TimelineView } from "@/components/views/timeline-view";
-import { CashFlowView } from "@/components/views/cashflow-view";
+
 import { HardAlertOverlay } from "@/components/alerts/hard-alert-overlay";
-import { RevenueDashboard } from "@/components/revenue/revenue-dashboard";
+
 import { CheckInSystem } from "@/components/accountability/check-in-system";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { ViewMode } from "@/types";
+import { Task, Client } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,8 +23,8 @@ export default function Home() {
   const queryClient = useQueryClient();
 
   // Check if this is a new user who needs onboarding
-  const { data: tasks = [] } = useQuery({ queryKey: ["/api/tasks"] });
-  const { data: clients = [] } = useQuery({ queryKey: ["/api/clients"] });
+  const { data: tasks = [] } = useQuery<Task[]>({ queryKey: ["/api/tasks"] });
+  const { data: clients = [] } = useQuery<Client[]>({ queryKey: ["/api/clients"] });
   
   // Show onboarding if no tasks and no clients exist
   const needsOnboarding = tasks.length === 0 && clients.length === 0;
@@ -73,10 +74,8 @@ export default function Home() {
         return <CalendarView />;
       case "gantt":
         return <TimelineView />;
-      case "cashflow":
-        return <CashFlowView />;
-      case "revenue":
-        return <RevenueDashboard />;
+
+
       case "accountability":
         return <CheckInSystem />;
       default:

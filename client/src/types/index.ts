@@ -1,8 +1,9 @@
 export interface DailyOverview {
   taskCount: number;
-  potentialRevenue: number;
   urgentTasks: number;
   completedTasks: number;
+  overdueCheckIns: number;
+  activeHardAlerts: number;
 }
 
 export interface TaskBreakdown {
@@ -29,7 +30,7 @@ export interface WebSocketMessage {
   data: any;
 }
 
-export type ViewMode = "chat" | "calendar" | "gantt" | "cashflow" | "revenue" | "accountability";
+export type ViewMode = "chat" | "calendar" | "gantt" | "accountability";
 
 export interface VoiceRecognitionResult {
   transcript: string;

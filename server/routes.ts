@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai";
 import { setupWebSocket } from "./services/websocket";
-import { insertMessageSchema, insertTaskSchema, insertNotificationSchema, insertRevenueEntrySchema, insertCheckInSchema } from "@shared/schema";
+import { insertMessageSchema, insertTaskSchema, insertNotificationSchema, insertCheckInSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {

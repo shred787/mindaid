@@ -1,5 +1,5 @@
 import { ViewMode } from "@/types";
-import { MessageCircle, Calendar, BarChart3, DollarSign, TrendingUp, Shield } from "lucide-react";
+import { MessageCircle, Calendar, BarChart3, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewSelectorProps {
@@ -11,8 +11,6 @@ const viewConfig = {
   chat: { icon: MessageCircle, label: "Chat" },
   calendar: { icon: Calendar, label: "Calendar" },
   gantt: { icon: BarChart3, label: "Timeline" },
-  cashflow: { icon: DollarSign, label: "Cash Flow" },
-  revenue: { icon: TrendingUp, label: "Revenue" },
   accountability: { icon: Shield, label: "Check-ins" },
 };
 
