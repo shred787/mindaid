@@ -37,7 +37,7 @@ export function CalendarView() {
 
   const todaysTasks = getTodaysTasks();
   const totalTodayTime = todaysTasks.reduce((total, task) => total + task.estimatedMinutes, 0);
-  const totalTodayRevenue = todaysTasks.reduce((total, task) => total + (task.potentialRevenue || 0), 0);
+
 
   return (
     <div className="p-6 space-y-6">
@@ -54,7 +54,7 @@ export function CalendarView() {
       {/* Today's Summary */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Today's Overview</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="text-center p-3 bg-blue-50 rounded-lg">
             <div className="text-2xl font-bold text-blue-600">{todaysTasks.length}</div>
             <div className="text-sm text-gray-600">Tasks</div>
@@ -62,10 +62,6 @@ export function CalendarView() {
           <div className="text-center p-3 bg-green-50 rounded-lg">
             <div className="text-2xl font-bold text-green-600">{Math.round(totalTodayTime / 60)}h</div>
             <div className="text-sm text-gray-600">Estimated Time</div>
-          </div>
-          <div className="text-center p-3 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">${totalTodayRevenue}</div>
-            <div className="text-sm text-gray-600">Potential Revenue</div>
           </div>
         </div>
       </div>
