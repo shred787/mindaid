@@ -81,7 +81,7 @@ export function TimelineView() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5" />
-            <span>Project Timeline</span>
+            <span>Tasks Timeline</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -131,7 +131,11 @@ export function TimelineView() {
                             />
 
                             {/* Task Card */}
-                            <div className="bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                 onClick={() => {
+                                   // Navigate to task - you could implement this to open task details or scroll to task
+                                   console.log('Navigate to task:', task.id);
+                                 }}>
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-medium text-gray-900 flex items-center">
                                   <Target className="h-4 w-4 mr-2 text-primary" />

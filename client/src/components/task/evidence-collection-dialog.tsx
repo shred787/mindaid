@@ -287,11 +287,11 @@ export function EvidenceCollectionDialog({
             <Button
               onClick={handleSubmit}
               disabled={!description.trim() && attachments.length === 0}
-              className="flex-1"
+              className="flex-1 btn-primary-visible"
             >
               Submit Evidence & Complete Task
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button className="btn-secondary-visible" onClick={onClose}>
               Cancel
             </Button>
           </div>

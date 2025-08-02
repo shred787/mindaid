@@ -78,7 +78,7 @@ export function VoiceInputBar({ onSendMessage, disabled }: VoiceInputBarProps) {
             onClick={toggleListening}
             disabled={!isSupported || disabled}
           >
-            <Mic className="text-white text-lg" />
+            <Mic className="text-primary-foreground text-lg" />
           </Button>
 
           {/* Text Input */}
@@ -118,7 +118,7 @@ export function VoiceInputBar({ onSendMessage, disabled }: VoiceInputBarProps) {
         <div className="flex items-center justify-center space-x-1 sm:space-x-2 mt-2 sm:mt-3">
           <Button
             size="sm"
-            className="bg-success hover:bg-success/90 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1"
+            className="bg-green-600 hover:bg-green-700 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1 shadow-lg"
             onClick={() => handleQuickAction("task_done")}
             disabled={disabled}
           >
@@ -128,7 +128,7 @@ export function VoiceInputBar({ onSendMessage, disabled }: VoiceInputBarProps) {
           
           <Button
             size="sm"
-            className="bg-warning hover:bg-warning/90 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1 shadow-lg"
             onClick={() => handleQuickAction("need_time")}
             disabled={disabled}
           >

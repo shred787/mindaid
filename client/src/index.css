@@ -137,6 +137,59 @@
     background-color: hsl(220, 14%, 96%) !important;
     color: hsl(224, 71%, 4%) !important;
   }
+  
+  /* Fix all white-on-white button visibility issues */
+  .btn-primary-visible {
+    background-color: hsl(221, 83%, 53%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    border: 1px solid hsl(221, 83%, 53%) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .btn-primary-visible:hover {
+    background-color: hsl(221, 83%, 48%) !important;
+    border-color: hsl(221, 83%, 48%) !important;
+  }
+  
+  .btn-secondary-visible {
+    background-color: hsl(220, 14%, 96%) !important;
+    color: hsl(224, 71%, 4%) !important;
+    border: 1px solid hsl(220, 13%, 91%) !important;
+    font-weight: 500 !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  }
+  
+  .btn-secondary-visible:hover {
+    background-color: hsl(0, 0%, 100%) !important;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .btn-success-visible {
+    background-color: hsl(142, 76%, 36%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    border: 1px solid hsl(142, 76%, 36%) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .btn-success-visible:hover {
+    background-color: hsl(142, 76%, 31%) !important;
+    border-color: hsl(142, 76%, 31%) !important;
+  }
+  
+  .btn-destructive-visible {
+    background-color: hsl(0, 84%, 60%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    border: 1px solid hsl(0, 84%, 60%) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .btn-destructive-visible:hover {
+    background-color: hsl(0, 84%, 55%) !important;
+    border-color: hsl(0, 84%, 55%) !important;
+  }
 
   .chat-scroll {
     scrollbar-width: none;

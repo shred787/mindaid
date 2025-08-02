@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@shared/schema";
-import { Clock, DollarSign, Calendar, CheckCircle, Circle, Edit3, ChevronRight, AlertTriangle } from "lucide-react";
+import { Clock, Calendar, CheckCircle, Circle, Edit3, ChevronRight, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { EvidenceCollectionDialog, type TaskEvidence } from "@/components/task/evidence-collection-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -220,10 +220,7 @@ export function CalendarView() {
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{Math.round(getTotalTime(tasksForSelectedDate) / 60)}h</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>${getTotalRevenue(tasksForSelectedDate).toLocaleString()}</span>
-              </div>
+
             </div>
           </CardTitle>
         </CardHeader>
@@ -388,7 +385,7 @@ export function CalendarView() {
                         {/* Action Buttons */}
                         <div className="flex space-x-2 pt-4">
                           <Button
-                            variant={task.completed ? "outline" : "default"}
+                            className={task.completed ? "btn-secondary-visible" : "btn-primary-visible"}
                             onClick={() => {
                               updateTaskMutation.mutate({
                                 taskId: task.id,
@@ -400,12 +397,12 @@ export function CalendarView() {
                             {(() => {
                               const subtasks = getSubtasks(task);
                               if (subtasks.length > 0) {
-                                return task.completed ? "Mark Project Incomplete" : "Mark Project Complete";
+                                return task.completed ? "Mark Project Incomplete" : "Submit Project As Complete";
                               }
-                              return task.completed ? "Mark Incomplete" : "Mark Complete";
+                              return task.completed ? "Mark Incomplete" : "Submit As Complete";
                             })()}
                           </Button>
-                          <Button variant="outline" onClick={() => handleEdit(task)}>
+                          <Button className="btn-secondary-visible" onClick={() => handleEdit(task)}>
                             Edit Task
                           </Button>
                         </div>
