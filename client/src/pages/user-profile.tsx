@@ -205,7 +205,7 @@ export default function UserProfile() {
                     variant={profile.accountabilityLevel === 'strict' ? 'destructive' : 
                              profile.accountabilityLevel === 'moderate' ? 'default' : 'secondary'}
                   >
-                    {profile.accountabilityLevel === 'strict' ? 'Dan Pena Mode' : 
+                    {profile.accountabilityLevel === 'strict' ? 'Maximum Accountability' : 
                      profile.accountabilityLevel === 'moderate' ? 'Balanced' : 'Gentle'}
                   </Badge>
                 </div>
@@ -484,7 +484,7 @@ export default function UserProfile() {
                                profile.accountabilityLevel === 'moderate' ? 'default' : 'secondary'}
                       className="text-sm"
                     >
-                      {profile.accountabilityLevel === 'strict' ? 'Dan Pena Mode - Zero tolerance for excuses' : 
+                      {profile.accountabilityLevel === 'strict' ? 'Maximum Accountability - Zero tolerance for excuses' : 
                        profile.accountabilityLevel === 'moderate' ? 'Balanced - Professional accountability' : 
                        'Gentle - Supportive encouragement'}
                     </Badge>

@@ -68,13 +68,10 @@ export function AppHeader() {
       {/* Logo and Title */}
       <div className="flex items-center space-x-2 sm:space-x-3">
         <Link href="/">
-          <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
-            </div>
+          <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
             <div className="min-w-0">
               <h1 className="font-bold text-sm sm:text-lg text-primary-foreground truncate">Productivity Pro</h1>
-              <p className="text-primary-foreground/70 text-xs sm:text-sm hidden sm:block">Dan Pena Accountability System</p>
+              <p className="text-primary-foreground/70 text-xs sm:text-sm hidden sm:block">Productivity Pro Accountability System</p>
             </div>
           </div>
         </Link>
@@ -161,20 +158,8 @@ export function AppHeader() {
         {/* Profile Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center space-x-2 p-1 sm:p-2 text-primary-foreground hover:bg-primary-foreground/10">
-              <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
-                <AvatarImage src={user.profileImage} />
-                <AvatarFallback className="text-xs font-bold bg-primary-foreground/20 text-primary-foreground">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden sm:block text-left">
-                <div className="text-sm font-medium text-primary-foreground">
-                  {user.firstName} {user.lastName}
-                </div>
-                <div className="text-xs text-primary-foreground/70">{user.jobTitle}</div>
-              </div>
-              <ChevronDown className="h-4 w-4 text-primary-foreground/70" />
+            <Button variant="ghost" className="p-2 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+              <User className="h-5 w-5 sm:h-6 sm:w-6" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
