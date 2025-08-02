@@ -88,6 +88,26 @@
   .bg-danger {
     background-color: hsl(var(--danger));
   }
+  
+  .bg-primary {
+    background-color: hsl(var(--primary));
+  }
+  
+  .text-danger {
+    color: hsl(var(--danger));
+  }
+  
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+  
+  .bg-warning {
+    background-color: hsl(var(--warning));
+  }
+  
+  .bg-danger {
+    background-color: hsl(var(--danger));
+  }
 
   .chat-scroll {
     scrollbar-width: none;

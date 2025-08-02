@@ -116,8 +116,8 @@ export function AlertCard({ type, title, message, action, data }: AlertCardProps
             className={cn(
               "px-3 py-1 text-sm font-medium shadow-md",
               type === "urgent" || type === "overdue" 
-                ? "bg-danger hover:bg-danger/90 text-white animate-pulse" 
-                : "bg-primary hover:bg-primary/90 text-white"
+                ? "bg-red-600 hover:bg-red-700 text-white animate-pulse" 
+                : "bg-blue-600 hover:bg-blue-700 text-white"
             )}
             onClick={(e) => {
               e.stopPropagation();
