@@ -1,14 +1,39 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Task } from "@shared/schema";
-import { Clock, Calendar, Target } from "lucide-react";
+import { Clock, Calendar, Target, ChevronRight } from "lucide-react";
 
 export function TimelineView() {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
   });
+
+  // Helper function to determine if a task is a subtask (has a parent)
+  const getParentTask = (task: Task): Task | undefined => {
+    // Check if task title contains patterns that indicate it's a subtask
+    if (task.title.includes('- ') || task.title.includes(': ')) {
+      // Find parent task by looking for similar title patterns or project association
+      return tasks.find(t => t.id !== task.id && (
+        task.title.toLowerCase().includes(t.title.toLowerCase()) ||
+        (t.projectId && t.projectId === task.projectId && t.estimatedMinutes > task.estimatedMinutes)
+      ));
+    }
+    return undefined;
+  };
+
+  const getSubtasks = (parentTask: Task): Task[] => {
+    return tasks.filter(task => 
+      task.id !== parentTask.id && 
+      (task.title.toLowerCase().includes(parentTask.title.toLowerCase()) ||
+       (task.projectId && task.projectId === parentTask.projectId && task.estimatedMinutes < parentTask.estimatedMinutes))
+    );
+  };
 
   // Group tasks by date
   const tasksByDate = tasks.reduce((acc, task) => {
@@ -64,9 +89,7 @@ export function TimelineView() {
     return Math.round((completed / tasks.length) * 100);
   };
 
-  const getTotalRevenue = (tasks: Task[]) => {
-    return tasks.reduce((sum, task) => sum + (Number(task.revenueImpact) || 0), 0);
-  };
+  // Revenue impact removed - now using priority-based system instead
 
   const getStatusColor = (task: Task) => {
     if (task.completed) return "bg-success";
@@ -92,7 +115,6 @@ export function TimelineView() {
               sortedDates.map((dateString) => {
                 const dateTasks = tasksByDate[dateString];
                 const progress = getTaskProgress(dateTasks);
-                const totalRevenue = getTotalRevenue(dateTasks);
 
                 return (
                   <div key={dateString} className="relative">
@@ -104,7 +126,6 @@ export function TimelineView() {
                         </h3>
                         <p className="text-sm text-gray-500">
                           {dateTasks.length} task{dateTasks.length !== 1 ? 's' : ''}
-                          {totalRevenue > 0 && ` • $${totalRevenue.toLocaleString()} potential`}
                         </p>
                       </div>
                       <div className="text-right">
@@ -132,14 +153,35 @@ export function TimelineView() {
 
                             {/* Task Card */}
                             <div className="bg-white border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                                 onClick={() => {
-                                   // Navigate to task - you could implement this to open task details or scroll to task
-                                   console.log('Navigate to task:', task.id);
-                                 }}>
+                                 onClick={() => setSelectedTask(task)}>
                               <div className="flex items-center justify-between mb-2">
                                 <h4 className="font-medium text-gray-900 flex items-center">
                                   <Target className="h-4 w-4 mr-2 text-primary" />
-                                  {task.title}
+                                  {(() => {
+                                    const parentTask = getParentTask(task);
+                                    const subtasks = getSubtasks(task);
+                                    
+                                    if (parentTask) {
+                                      return (
+                                        <span className="flex items-center">
+                                          <span className="text-xs text-gray-500 mr-2">
+                                            {parentTask.title} →
+                                          </span>
+                                          {task.title}
+                                        </span>
+                                      );
+                                    } else if (subtasks.length > 0) {
+                                      return (
+                                        <span className="flex items-center">
+                                          {task.title}
+                                          <span className="text-xs text-gray-500 ml-2">
+                                            ({subtasks.length} subtask{subtasks.length !== 1 ? 's' : ''})
+                                          </span>
+                                        </span>
+                                      );
+                                    }
+                                    return task.title;
+                                  })()}
                                 </h4>
                                 <div className="flex items-center space-x-2">
                                   {task.scheduledStart && (
@@ -165,9 +207,9 @@ export function TimelineView() {
                                     <Clock className="h-3 w-3 mr-1" />
                                     {task.estimatedMinutes}m
                                   </span>
-                                  {Number(task.revenueImpact) > 0 && (
-                                    <span className="text-success font-medium">
-                                      ${Number(task.revenueImpact).toLocaleString()}
+                                  {task.priority >= 4 && (
+                                    <span className="text-red-600 font-medium text-xs">
+                                      High Priority
                                     </span>
                                   )}
                                 </div>
@@ -189,6 +231,89 @@ export function TimelineView() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Task Details Dialog */}
+      <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Target className="h-5 w-5 mr-2 text-primary" />
+              {selectedTask?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTask && (
+            <div className="space-y-4">
+              {selectedTask.description && (
+                <div>
+                  <h3 className="font-medium text-sm text-gray-700 mb-1">Description</h3>
+                  <p className="text-gray-600">{selectedTask.description}</p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-medium text-sm text-gray-700 mb-1">Status</h3>
+                  <Badge variant={selectedTask.completed ? "default" : "secondary"}>
+                    {selectedTask.completed ? "Completed" : selectedTask.status.replace("_", " ")}
+                  </Badge>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-sm text-gray-700 mb-1">Priority</h3>
+                  <Badge variant={selectedTask.priority >= 4 ? "destructive" : "secondary"}>
+                    {selectedTask.priority >= 4 ? "High Priority" : "Normal Priority"}
+                  </Badge>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-sm text-gray-700 mb-1">Estimated Time</h3>
+                  <span className="text-gray-600">{selectedTask.estimatedMinutes} minutes</span>
+                </div>
+                
+                {(() => {
+                  const parentTask = getParentTask(selectedTask);
+                  const subtasks = getSubtasks(selectedTask);
+                  
+                  if (parentTask) {
+                    return (
+                      <div>
+                        <h3 className="font-medium text-sm text-gray-700 mb-1">Parent Task</h3>
+                        <span className="text-blue-600 font-medium">{parentTask.title}</span>
+                      </div>
+                    );
+                  } else if (subtasks.length > 0) {
+                    return (
+                      <div>
+                        <h3 className="font-medium text-sm text-gray-700 mb-1">Subtasks</h3>
+                        <div className="space-y-1">
+                          {subtasks.map(subtask => (
+                            <div key={subtask.id} className="text-sm text-gray-600">
+                              • {subtask.title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+              
+              {selectedTask.scheduledStart && (
+                <div>
+                  <h3 className="font-medium text-sm text-gray-700 mb-1">Schedule</h3>
+                  <div className="text-gray-600">
+                    <div>Start: {new Date(selectedTask.scheduledStart).toLocaleString()}</div>
+                    {selectedTask.scheduledEnd && (
+                      <div>End: {new Date(selectedTask.scheduledEnd).toLocaleString()}</div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

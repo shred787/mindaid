@@ -73,12 +73,12 @@ export function VoiceInputBar({ onSendMessage, disabled }: VoiceInputBarProps) {
             size="icon"
             className={cn(
               "w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg",
-              isListening ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary/90"
+              isListening ? "bg-red-500 hover:bg-red-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white border border-blue-600"
             )}
             onClick={toggleListening}
             disabled={!isSupported || disabled}
           >
-            <Mic className="text-primary-foreground text-lg" />
+            <Mic className="text-white text-lg" />
           </Button>
 
           {/* Text Input */}
