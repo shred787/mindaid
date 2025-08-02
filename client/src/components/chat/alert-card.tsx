@@ -55,7 +55,14 @@ export function AlertCard({ type, title, message, action, data }: AlertCardProps
   const Icon = config.icon;
 
   return (
-    <div className={cn("border rounded-xl p-4", config.bgClass)}>
+    <div 
+      className={cn(
+        "border rounded-xl p-4 transition-all duration-200",
+        config.bgClass,
+        action ? "cursor-pointer hover:shadow-lg hover:scale-[1.02]" : ""
+      )}
+      onClick={action?.onClick}
+    >
       <div className="flex items-center space-x-3">
         <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", config.iconClass)}>
           <Icon className="text-white h-5 w-5" />
@@ -107,12 +114,15 @@ export function AlertCard({ type, title, message, action, data }: AlertCardProps
           <Button
             size="sm"
             className={cn(
-              "px-3 py-1 text-sm font-medium",
+              "px-3 py-1 text-sm font-medium shadow-md",
               type === "urgent" || type === "overdue" 
-                ? "bg-danger hover:bg-danger/90 text-white" 
+                ? "bg-danger hover:bg-danger/90 text-white animate-pulse" 
                 : "bg-primary hover:bg-primary/90 text-white"
             )}
-            onClick={action.onClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick();
+            }}
           >
             {action.label}
           </Button>

@@ -337,6 +337,69 @@ Consider:
     }
   }
 
+  async challengeProjectCompletion(request: {
+    projectTitle: string;
+    incompleteSubtasks: Array<{
+      title: string;
+      priority: number;
+      estimatedMinutes: number;
+    }>;
+    totalSubtasks: number;
+    completedSubtasks: number;
+  }): Promise<{
+    challenge: string;
+    questions: string[];
+    concerns: string[];
+  }> {
+    try {
+      const prompt = `A user is trying to mark a project as complete when it still has incomplete subtasks. As their AI assistant, you need to challenge this decision professionally and help them think through the implications.
+
+Project: "${request.projectTitle}"
+Progress: ${request.completedSubtasks}/${request.totalSubtasks} subtasks completed
+
+Incomplete subtasks:
+${request.incompleteSubtasks.map(t => `- ${t.title} (Priority: ${t.priority}/5, ${t.estimatedMinutes}min)`).join('\n')}
+
+Generate a thoughtful challenge that:
+1. Questions their reasoning for marking it complete
+2. Highlights potential risks or oversights
+3. Suggests better alternatives
+4. Maintains a supportive but firm tone
+
+Respond with JSON:
+{
+  "challenge": "A direct, professional challenge question",
+  "questions": ["What about X?", "Have you considered Y?", "How will this affect Z?"],
+  "concerns": ["Specific concern 1", "Specific concern 2", "Specific concern 3"]
+}
+
+Be business-focused and help them make better decisions.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      });
+
+      return JSON.parse(response.choices[0].message.content || '{}');
+    } catch (error) {
+      console.error("Challenge generation error:", error);
+      return {
+        challenge: "Are you sure you want to mark this project complete with unfinished subtasks?",
+        questions: [
+          "What's your reasoning for completing this now?",
+          "How will the incomplete tasks be handled?",
+          "What are the business implications?"
+        ],
+        concerns: [
+          "Incomplete tasks may be forgotten",
+          "Project tracking becomes inaccurate",
+          "Client deliverables might be missed"
+        ]
+      };
+    }
+  }
+
   async generateCashFlowInsight(userId: string): Promise<{
     insight: string;
     projectedRevenue: number;

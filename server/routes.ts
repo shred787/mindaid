@@ -65,6 +65,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const updates = req.body;
+      
+      // Check if this is a project completion attempt with incomplete subtasks
+      if (updates.completed === true && !updates.forceComplete) {
+        const currentTask = await storage.getTask(id);
+        if (currentTask) {
+          const subtasks = await storage.getTasks(demoUser.id);
+          const projectSubtasks = subtasks.filter(t => t.projectId === id);
+          const incompleteSubtasks = projectSubtasks.filter(t => !t.completed);
+          
+          if (projectSubtasks.length > 0 && incompleteSubtasks.length > 0) {
+            // Generate GPT challenge for project completion
+            const challengeResponse = await openaiService.challengeProjectCompletion({
+              projectTitle: currentTask.title,
+              incompleteSubtasks: incompleteSubtasks.map(t => ({
+                title: t.title,
+                priority: t.priority,
+                estimatedMinutes: t.estimatedMinutes
+              })),
+              totalSubtasks: projectSubtasks.length,
+              completedSubtasks: projectSubtasks.length - incompleteSubtasks.length
+            });
+            
+            return res.status(409).json({ 
+              error: "Project completion challenge",
+              challenge: challengeResponse,
+              requiresJustification: true
+            });
+          }
+        }
+      }
+      
       const task = await storage.updateTask(id, updates);
       res.json(task);
     } catch (error) {

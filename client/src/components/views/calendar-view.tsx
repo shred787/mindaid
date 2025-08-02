@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@shared/schema";
-import { Clock, DollarSign, Calendar, CheckCircle, Circle, Edit3, ChevronRight } from "lucide-react";
+import { Clock, DollarSign, Calendar, CheckCircle, Circle, Edit3, ChevronRight, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import "react-day-picker/dist/style.css";
 
@@ -20,6 +21,12 @@ export function CalendarView() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editForm, setEditForm] = useState<Partial<Task>>({});
+  const [challenge, setChallenge] = useState<{
+    task: Task;
+    challenge: string;
+    questions: string[];
+    concerns: string[];
+  } | null>(null);
   const queryClient = useQueryClient();
 
   const { data: tasks = [] } = useQuery<Task[]>({
@@ -33,6 +40,21 @@ export function CalendarView() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/overview"] });
+      setChallenge(null); // Clear challenge on success
+    },
+    onError: (error: any, variables) => {
+      if (error.challenge && error.requiresJustification) {
+        // Show GPT challenge dialog
+        const task = tasks.find(t => t.id === variables.taskId);
+        if (task) {
+          setChallenge({
+            task,
+            challenge: error.challenge.challenge,
+            questions: error.challenge.questions,
+            concerns: error.challenge.concerns
+          });
+        }
+      }
     },
   });
 
@@ -332,16 +354,6 @@ export function CalendarView() {
                           <Button
                             variant={task.completed ? "outline" : "default"}
                             onClick={() => {
-                              const subtasks = getSubtasks(task);
-                              const incompleteSubtasks = subtasks.filter(st => !st.completed);
-                              
-                              // If this is a project with incomplete subtasks, show confirmation
-                              if (subtasks.length > 0 && !task.completed && incompleteSubtasks.length > 0) {
-                                if (!confirm(`This project has ${incompleteSubtasks.length} incomplete subtasks. Mark the entire project as complete anyway? (Subtasks will remain independent)`)) {
-                                  return;
-                                }
-                              }
-                              
                               updateTaskMutation.mutate({
                                 taskId: task.id,
                                 updates: { completed: !task.completed }
@@ -472,6 +484,69 @@ export function CalendarView() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* GPT Challenge Dialog */}
+      <AlertDialog open={!!challenge} onOpenChange={() => setChallenge(null)}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <span>Wait, let me challenge this decision</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <p className="text-gray-700 font-medium">
+                  {challenge?.challenge}
+                </p>
+                
+                {challenge?.questions && challenge.questions.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-800 mb-2">Questions to consider:</h4>
+                    <ul className="list-disc list-inside space-y-1 text-gray-600">
+                      {challenge.questions.map((question, idx) => (
+                        <li key={idx}>{question}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {challenge?.concerns && challenge.concerns.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-800 mb-2">Potential concerns:</h4>
+                    <ul className="list-disc list-inside space-y-1 text-gray-600">
+                      {challenge.concerns.map((concern, idx) => (
+                        <li key={idx}>{concern}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>You're right, let me reconsider</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={() => {
+                // Force complete the task anyway by bypassing the challenge
+                if (challenge?.task) {
+                  // Create a direct API request that includes forceComplete
+                  apiRequest("PATCH", `/api/tasks/${challenge.task.id}`, { 
+                    completed: true, 
+                    forceComplete: true 
+                  }).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+                    queryClient.invalidateQueries({ queryKey: ["/api/overview"] });
+                    setChallenge(null);
+                  });
+                }
+              }}
+            >
+              Complete anyway - I have my reasons
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
