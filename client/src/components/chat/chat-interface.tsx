@@ -116,18 +116,12 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
               </h3>
               <span className="text-sm text-gray-500">{formatDate(currentDate)}</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
                   {overview?.taskCount || 0}
                 </div>
                 <div className="text-xs text-gray-600">Tasks</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-success">
-                  ${((overview?.potentialRevenue || 0) / 1000).toFixed(1)}k
-                </div>
-                <div className="text-xs text-gray-600">Potential</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-warning">
