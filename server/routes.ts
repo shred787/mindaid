@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
-      // Check if this is a project completion attempt with incomplete subtasks
+      // Challenge task/project completion attempts  
       if (updates.completed === true && !updates.forceComplete) {
         const currentTask = await storage.getTask(id);
         if (currentTask) {
@@ -74,8 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const projectSubtasks = subtasks.filter(t => t.projectId === id);
           const incompleteSubtasks = projectSubtasks.filter(t => !t.completed);
           
+          // Challenge project completion with incomplete subtasks
           if (projectSubtasks.length > 0 && incompleteSubtasks.length > 0) {
-            // Generate GPT challenge for project completion
             const challengeResponse = await openaiService.challengeProjectCompletion({
               projectTitle: currentTask.title,
               incompleteSubtasks: incompleteSubtasks.map(t => ({
@@ -89,6 +89,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             return res.status(409).json({ 
               error: "Project completion challenge",
+              challenge: challengeResponse,
+              requiresJustification: true
+            });
+          }
+          
+          // Challenge individual task completion (random 40% chance for accountability)
+          if (projectSubtasks.length === 0 && Math.random() < 0.4) {
+            const challengeResponse = await openaiService.challengeTaskCompletion({
+              taskTitle: currentTask.title,
+              taskDescription: currentTask.description || undefined,
+              estimatedMinutes: currentTask.estimatedMinutes || undefined,
+              priority: currentTask.priority,
+              actualMinutes: currentTask.actualMinutes || undefined
+            });
+            
+            return res.status(409).json({ 
+              error: "Task completion challenge",
               challenge: challengeResponse,
               requiresJustification: true
             });

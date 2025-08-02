@@ -337,6 +337,71 @@ Consider:
     }
   }
 
+  async challengeTaskCompletion(request: {
+    taskTitle: string;
+    taskDescription?: string;
+    estimatedMinutes?: number;
+    priority: number;
+    actualMinutes?: number;
+  }): Promise<{
+    challenge: string;
+    questions: string[];
+    concerns: string[];
+  }> {
+    try {
+      const timeSpent = request.actualMinutes || 0;
+      const estimatedTime = request.estimatedMinutes || 0;
+      const timeContext = timeSpent > 0 
+        ? `You estimated ${estimatedTime} minutes but only spent ${timeSpent} minutes on it.`
+        : `This was estimated to take ${estimatedTime} minutes.`;
+
+      const prompt = `A user is trying to mark a task as complete. As their AI assistant, you need to challenge this decision and ensure they've actually completed it properly.
+
+Task: "${request.taskTitle}"
+Priority: ${request.priority}/5
+${request.taskDescription ? `Description: "${request.taskDescription}"` : ''}
+${timeContext}
+
+Generate a thoughtful challenge that:
+1. Questions evidence of completion
+2. Asks about quality checks or verification
+3. Considers business impact and next steps
+4. Maintains accountability without being annoying
+
+Respond with JSON:
+{
+  "challenge": "A direct question asking for evidence or justification",
+  "questions": ["What specific evidence do you have?", "Have you verified quality?", "What's the next step?"],
+  "concerns": ["Quality concern", "Business impact concern", "Accountability concern"]
+}
+
+Be professional and focus on ensuring work quality and proper completion.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      });
+
+      return JSON.parse(response.choices[0].message.content || '{}');
+    } catch (error) {
+      console.error("Task challenge generation error:", error);
+      return {
+        challenge: `Can you provide evidence that "${request.taskTitle}" is actually complete?`,
+        questions: [
+          "What specific work did you complete?",
+          "Have you checked the quality of your work?",
+          "Is there any documentation or proof of completion?"
+        ],
+        concerns: [
+          "Marking tasks complete without verification can lead to quality issues",
+          "Incomplete work may cause problems for clients or team members",
+          "Proper accountability requires evidence of actual completion"
+        ]
+      };
+    }
+  }
+
   async challengeProjectCompletion(request: {
     projectTitle: string;
     incompleteSubtasks: Array<{
