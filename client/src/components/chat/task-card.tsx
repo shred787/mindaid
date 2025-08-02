@@ -1,8 +1,10 @@
 import { Task } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, DollarSign, Target } from "lucide-react";
+import { Clock, DollarSign, Target, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link } from "wouter";
 
 interface TaskCardProps {
   task: Task;
@@ -77,6 +79,18 @@ export function TaskCard({
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Special Action Links */}
+      {task.title === "Complete Business Profile Setup" && (
+        <div className="mb-3">
+          <Link href="/business-profile">
+            <Button variant="outline" size="sm" className="w-full">
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open Business Profile
+            </Button>
+          </Link>
         </div>
       )}
 
