@@ -166,11 +166,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 {commonServices.map(service => (
                   <Badge
                     key={service}
-                    variant={data.primaryServices.includes(service) ? "default" : "outline"}
-                    className={`cursor-pointer ${
+                    variant="outline"
+                    className={`cursor-pointer transition-colors ${
                       data.primaryServices.includes(service) 
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                        : "border-border bg-background text-foreground hover:bg-muted"
+                        ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" 
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                     onClick={() => updateData({ 
                       primaryServices: toggleArrayItem(data.primaryServices, service) 
@@ -204,11 +204,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 {clientTypes.map(type => (
                   <Badge
                     key={type}
-                    variant={data.clientTypes.includes(type) ? "default" : "outline"}
-                    className={`cursor-pointer ${
+                    variant="outline"
+                    className={`cursor-pointer transition-colors ${
                       data.clientTypes.includes(type) 
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                        : "border-border bg-background text-foreground hover:bg-muted"
+                        ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" 
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                     onClick={() => updateData({ 
                       clientTypes: toggleArrayItem(data.clientTypes, type) 
@@ -242,11 +242,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 {businessGoals.map(goal => (
                   <Badge
                     key={goal}
-                    variant={data.goals.includes(goal) ? "default" : "outline"}
-                    className={`cursor-pointer ${
+                    variant="outline"
+                    className={`cursor-pointer transition-colors ${
                       data.goals.includes(goal) 
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                        : "border-border bg-background text-foreground hover:bg-muted"
+                        ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700" 
+                        : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                     }`}
                     onClick={() => updateData({ 
                       goals: toggleArrayItem(data.goals, goal) 
