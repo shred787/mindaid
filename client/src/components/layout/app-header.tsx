@@ -10,7 +10,7 @@ export function AppHeader() {
   const unacknowledgedCount = (notifications as any[]).filter((n: any) => !n.acknowledged).length;
 
   return (
-    <div className="bg-primary text-primary-foreground p-3 sm:p-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+    <div className="app-header-primary p-3 sm:p-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
       <div className="flex items-center space-x-2 sm:space-x-3">
         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-foreground/10 rounded-full flex items-center justify-center">
           <div className="w-4 h-4 sm:w-5 sm:h-5 bg-primary-foreground rounded-sm"></div>

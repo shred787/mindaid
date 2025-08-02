@@ -30,8 +30,8 @@ export function ViewSelector({ currentView, onViewChange }: ViewSelectorProps) {
                 "flex-1 py-2 sm:py-2.5 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center",
                 "min-w-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-sm scale-[0.98]"
-                  : "text-foreground hover:bg-background hover:shadow-sm hover:text-foreground"
+                  ? "view-selector-active shadow-sm"
+                  : "view-selector-inactive"
               )}
             >
               <Icon className="w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0" />

@@ -33,7 +33,7 @@ export function TaskCard({
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="task-card-modern rounded-xl p-4 transition-shadow">
       {/* Task Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">

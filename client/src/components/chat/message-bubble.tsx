@@ -36,8 +36,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <div className={cn(
           "rounded-xl p-3 max-w-xs",
           isUser 
-            ? "bg-primary text-primary-foreground rounded-tr-sm ml-auto" 
-            : "bg-muted text-muted-foreground rounded-tl-sm"
+            ? "message-user rounded-tr-sm ml-auto" 
+            : "message-assistant rounded-tl-sm"
         )}>
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>

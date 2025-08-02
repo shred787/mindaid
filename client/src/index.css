@@ -92,6 +92,51 @@
   .bg-primary {
     background-color: hsl(var(--primary));
   }
+}
+
+/* Force high-contrast styling for critical elements */
+@layer components {
+  .view-selector-active {
+    background-color: hsl(221, 83%, 53%) !important;
+    color: hsl(0, 0%, 98%) !important;
+    font-weight: 600 !important;
+  }
+  
+  .view-selector-inactive {
+    background-color: hsl(220, 14%, 96%) !important;
+    color: hsl(224, 71%, 4%) !important;
+    font-weight: 500 !important;
+  }
+  
+  .view-selector-inactive:hover {
+    background-color: hsl(0, 0%, 100%) !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .app-header-primary {
+    background-color: hsl(221, 83%, 53%) !important;
+    color: hsl(0, 0%, 98%) !important;
+  }
+  
+  .task-card-modern {
+    background-color: hsl(0, 0%, 100%) !important;
+    border: 1px solid hsl(220, 13%, 91%) !important;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .task-card-modern:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+  }
+  
+  .message-user {
+    background-color: hsl(221, 83%, 53%) !important;
+    color: hsl(0, 0%, 98%) !important;
+  }
+  
+  .message-assistant {
+    background-color: hsl(220, 14%, 96%) !important;
+    color: hsl(224, 71%, 4%) !important;
+  }
 
   .chat-scroll {
     scrollbar-width: none;
