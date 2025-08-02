@@ -2,7 +2,7 @@ import { Task } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Clock, DollarSign, Target, ExternalLink } from "lucide-react";
+import { Clock, DollarSign, Target, ExternalLink, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
 
@@ -16,13 +16,17 @@ interface TaskCardProps {
   }>;
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
   onSubtaskToggle?: (index: number, completed: boolean) => void;
+  onTaskDone?: (taskId: string) => void;
+  onNeedMoreTime?: (taskId: string) => void;
 }
 
 export function TaskCard({ 
   task, 
   subtasks = [], 
   onTaskUpdate, 
-  onSubtaskToggle 
+  onSubtaskToggle,
+  onTaskDone,
+  onNeedMoreTime
 }: TaskCardProps) {
   // Revenue tracking removed - focus on pure productivity
   const totalMinutes = task.estimatedMinutes || 0;
@@ -121,6 +125,29 @@ export function TaskCard({
           </div>
         </div>
       </div>
+      
+      {/* Task Action Buttons - Only for incomplete tasks */}
+      {!task.completed && (
+        <div className="flex items-center justify-center space-x-2 mt-3 pt-3 border-t border-border">
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1 shadow-sm"
+            onClick={() => onTaskDone?.(task.id)}
+          >
+            <Check className="h-3 w-3" />
+            <span>Task Done</span>
+          </Button>
+          
+          <Button
+            size="sm"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1 shadow-sm"
+            onClick={() => onNeedMoreTime?.(task.id)}
+          >
+            <Clock className="h-3 w-3" />
+            <span>Need More Time</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

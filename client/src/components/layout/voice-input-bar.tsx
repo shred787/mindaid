@@ -115,27 +115,7 @@ export function VoiceInputBar({ onSendMessage, disabled }: VoiceInputBarProps) {
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex items-center justify-center space-x-1 sm:space-x-2 mt-2 sm:mt-3">
-          <Button
-            size="sm"
-            className="bg-green-600 hover:bg-green-700 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1 shadow-lg"
-            onClick={() => handleQuickAction("task_done")}
-            disabled={disabled}
-          >
-            <Check className="h-3 w-3" />
-            <span>Task Done</span>
-          </Button>
-          
-          <Button
-            size="sm"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs font-medium flex items-center space-x-1 shadow-lg"
-            onClick={() => handleQuickAction("need_time")}
-            disabled={disabled}
-          >
-            <Clock className="h-3 w-3" />
-            <span>Need More Time</span>
-          </Button>
-          
+        <div className="flex items-center justify-center mt-2 sm:mt-3">
           <Button
             size="sm"
             variant="secondary"
