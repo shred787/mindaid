@@ -90,7 +90,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
         priority: 3
       };
       
-      const project = await apiRequest("POST", "/api/projects", initialProject);
+      const project = await apiRequest("POST", "/api/projects", initialProject) as any;
 
       // Create welcome tasks based on business goals
       const welcomeTasks = getWelcomeTasks(data, project.id);
@@ -111,9 +111,9 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="max-w-2xl mx-auto p-6 space-y-6 bg-background text-foreground min-h-screen">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Your Business Assistant</h1>
+        <h1 className="text-3xl font-bold mb-2 text-foreground">Welcome to Your Business Assistant</h1>
         <p className="text-muted-foreground">Let's set up your productivity system with real business data</p>
         <div className="flex justify-center space-x-2 mt-4">
           {[1, 2, 3, 4].map(i => (
@@ -123,29 +123,30 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       </div>
 
       {step === 1 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
               <Briefcase className="h-5 w-5" />
               Tell us about your business
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               This helps us customize the system for your specific needs
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="businessName">Business Name *</Label>
+              <Label htmlFor="businessName" className="text-foreground">Business Name *</Label>
               <Input
                 id="businessName"
                 value={data.businessName}
                 onChange={(e) => updateData({ businessName: e.target.value })}
                 placeholder="e.g., Smith Consulting LLC"
+                className="bg-input border-border text-foreground"
               />
             </div>
             
             <div>
-              <Label htmlFor="businessType">Business Type *</Label>
+              <Label htmlFor="businessType" className="text-foreground">Business Type *</Label>
               <Select value={data.businessType} onValueChange={(value) => updateData({ businessType: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select your business type" />
@@ -159,7 +160,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </div>
 
             <div>
-              <Label>Primary Services</Label>
+              <Label className="text-foreground">Primary Services</Label>
               <p className="text-sm text-muted-foreground mb-2">Select all that apply</p>
               <div className="flex flex-wrap gap-2">
                 {commonServices.map(service => (
@@ -181,19 +182,19 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       )}
 
       {step === 2 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
               <Users className="h-5 w-5" />
               Who are your clients?
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               Understanding your client base helps us organize your work better
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Client Types</Label>
+              <Label className="text-foreground">Client Types</Label>
               <p className="text-sm text-muted-foreground mb-2">Select all that apply</p>
               <div className="flex flex-wrap gap-2">
                 {clientTypes.map(type => (
@@ -215,19 +216,19 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       )}
 
       {step === 3 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
               <Target className="h-5 w-5" />
               What are your main goals?
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               We'll help you track progress toward these objectives
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Business Goals</Label>
+              <Label className="text-foreground">Business Goals</Label>
               <p className="text-sm text-muted-foreground mb-2">Select your top priorities</p>
               <div className="flex flex-wrap gap-2">
                 {businessGoals.map(goal => (
@@ -246,13 +247,13 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </div>
 
             <div>
-              <Label htmlFor="challenges">Current Challenges</Label>
+              <Label htmlFor="challenges" className="text-foreground">Current Challenges</Label>
               <Textarea
                 id="challenges"
                 value={data.currentChallenges}
                 onChange={(e) => updateData({ currentChallenges: e.target.value })}
                 placeholder="What are the biggest challenges you're facing with productivity, time management, or client work?"
-                className="min-h-[100px]"
+                className="min-h-[100px] bg-input border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </CardContent>
@@ -260,19 +261,19 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       )}
 
       {step === 4 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
               <CheckCircle className="h-5 w-5" />
               Ready to get started!
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-muted-foreground">
               We'll create your initial workspace with real business data
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <h3 className="font-medium mb-2">What we'll set up for you:</h3>
+            <div className="bg-muted p-4 rounded-lg border border-border">
+              <h3 className="font-medium mb-2 text-foreground">What we'll set up for you:</h3>
               <ul className="text-sm space-y-1 text-muted-foreground">
                 <li>• Sample clients based on your business type</li>
                 <li>• Initial project structure</li>
@@ -282,8 +283,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               </ul>
             </div>
             
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
                 💡 <strong>Pro tip:</strong> The system requires evidence for ALL task completions. 
                 This means screenshots, documents, emails, or detailed descriptions proving work was done. 
                 No generic "I did that" responses allowed!
@@ -298,6 +299,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           variant="outline" 
           onClick={() => setStep(Math.max(1, step - 1))}
           disabled={step === 1}
+          className="border-border bg-background text-foreground hover:bg-muted"
         >
           Back
         </Button>
@@ -306,6 +308,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <Button 
             onClick={() => setStep(step + 1)}
             disabled={step === 1 && (!data.businessName || !data.businessType)}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Next
           </Button>
@@ -313,7 +316,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <Button 
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
           >
             {isSubmitting ? "Setting up..." : "Complete Setup"}
           </Button>
