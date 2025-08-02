@@ -111,9 +111,7 @@ export function HardAlertOverlay() {
                     onClick={async () => {
                       // Acknowledge the alert
                       try {
-                        await apiRequest(`/api/notifications/${alert.id}/acknowledge`, {
-                          method: 'POST',
-                        });
+                        await apiRequest('POST', `/api/notifications/${alert.id}/acknowledge`);
                         refetch();
                       } catch (error) {
                         console.error('Failed to acknowledge alert:', error);
