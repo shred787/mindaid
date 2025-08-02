@@ -2,8 +2,17 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: res.statusText };
+    }
+    
+    const error = new Error(`${res.status}: ${errorData.error || res.statusText}`);
+    // Attach response data to error for challenge system
+    (error as any).response = { data: errorData, status: res.status };
+    throw error;
   }
 }
 

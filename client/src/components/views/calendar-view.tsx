@@ -35,7 +35,8 @@ export function CalendarView() {
 
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, updates }: { taskId: string; updates: Partial<Task> }) => {
-      return apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
+      const response = await apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
@@ -43,17 +44,22 @@ export function CalendarView() {
       setChallenge(null); // Clear challenge on success
     },
     onError: (error: any, variables) => {
-      if (error.challenge && error.requiresJustification) {
-        // Show GPT challenge dialog
+      console.log("Update task error:", error);
+      
+      // Check if the error response contains challenge data
+      if (error?.response?.data?.challenge && error?.response?.data?.requiresJustification) {
         const task = tasks.find(t => t.id === variables.taskId);
         if (task) {
           setChallenge({
             task,
-            challenge: error.challenge.challenge,
-            questions: error.challenge.questions,
-            concerns: error.challenge.concerns
+            challenge: error.response.data.challenge.challenge,
+            questions: error.response.data.challenge.questions,
+            concerns: error.response.data.challenge.concerns
           });
         }
+      } else {
+        // For debugging: log the actual error structure
+        console.error("Task update failed:", error);
       }
     },
   });

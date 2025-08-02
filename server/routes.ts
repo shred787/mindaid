@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               incompleteSubtasks: incompleteSubtasks.map(t => ({
                 title: t.title,
                 priority: t.priority,
-                estimatedMinutes: t.estimatedMinutes
+                estimatedMinutes: t.estimatedMinutes || 0
               })),
               totalSubtasks: projectSubtasks.length,
               completedSubtasks: projectSubtasks.length - incompleteSubtasks.length
