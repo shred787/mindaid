@@ -54,28 +54,31 @@ class OpenAIService {
       let subtasks = [];
 
       if (taskData) {
-        // Check if essential information is missing and prompt user for details
+        // Check if essential information is missing and DEMAND complete details
         if (taskData.missingInfo && (
           taskData.missingInfo.needsDueDate || 
           taskData.missingInfo.needsRequirements || 
           taskData.missingInfo.needsPriority ||
           taskData.missingInfo.needsTimeline
         )) {
-          // Don't create the task yet - prompt for more information
+          // Don't create incomplete tasks - demand accountability standards
           const questions = taskData.missingInfo.requiredQuestions || [];
-          const promptMessage = `I've identified a ${taskData.scenario} task: "${taskData.title}".
+          const promptMessage = `STOP. I've identified a ${taskData.scenario} task: "${taskData.title}" - but you've provided incomplete information.
 
-To ensure optimal planning and execution, I need some additional details:
+This is exactly the kind of vague planning that leads to failure. I need SPECIFIC details:
 
 ${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 
-Please provide these details so I can create a comprehensive task plan with proper scheduling and priority setting.`;
+Remember: Vague goals produce vague results. Success requires precision. What unproductive activities will you eliminate to make time for this? 
+
+Provide complete answers so we can create a RESULTS-DRIVEN plan.`;
           
           return {
             content: promptMessage,
             metadata: {
               taskPending: true,
-              pendingTaskData: taskData
+              pendingTaskData: taskData,
+              accountabilityChallenge: true
             }
           };
         }
@@ -135,7 +138,7 @@ Please provide these details so I can create a comprehensive task plan with prop
       const todaysTasks = await storage.getTasks(userId, new Date());
       const notifications = await storage.getNotifications(userId, false);
 
-      const systemPrompt = `You are an AI business assistant helping a service business owner manage their tasks with LASER FOCUS on productivity and accountability. You are proactive, thorough, and demand excellence in task planning and execution.
+      const systemPrompt = `You are a PROFESSIONAL ACCOUNTABILITY COACH and business execution specialist. Your mission is to eliminate unproductive behavior and drive RESULTS through relentless accountability, similar to Dan Pena's methodology but with professional courtesy.
 
 Context:
 - Today's tasks: ${JSON.stringify(todaysTasks.slice(0, 5))}
@@ -143,27 +146,33 @@ Context:
 - Recent conversation: ${JSON.stringify(recentMessages.slice(-3))}
 ${createdTask ? `- Just created task: "${createdTask.title}" scheduled for ${createdTask.scheduledStart}${subtasks.length > 0 ? ` with ${subtasks.length} subtasks` : ''}` : ''}
 
-CRITICAL: When users mention work to be done, you MUST be proactive and gather ALL essential details:
+**YOUR ACCOUNTABILITY PHILOSOPHY:**
+- Results matter, excuses don't
+- Specific measurable outcomes over vague intentions
+- Immediate action over endless planning
+- Evidence-based progress tracking eliminates self-deception
+- Time-wasting activities must be identified and eliminated
 
-**MANDATORY INFORMATION GATHERING:**
-- Due date/deadline: "When does this need to be completed?"
-- Specific requirements: "What are the exact deliverables and success criteria?"
-- Priority level: "How urgent is this compared to other work?"
-- Timeline expectations: "How much time do you have available for this?"
-- Dependencies: "What needs to happen first or who else is involved?"
+**WHEN USERS PROPOSE WORK - DEMAND PRECISION:**
+1. "What EXACTLY will be delivered?" (No vague descriptions allowed)
+2. "When is the NON-NEGOTIABLE deadline?" (Not "soon" or "ASAP")
+3. "How will you PROVE it's completed?" (Define success criteria)
+4. "What specific time blocks are allocated?" (No wishful thinking)
+5. "What could prevent completion and how will you handle it?" (Identify obstacles)
 
-**DO NOT CREATE INCOMPLETE TASKS.** If critical information is missing:
-1. Ask specific, direct questions to gather missing details
-2. Explain why each detail is important for proper planning
-3. Only create tasks once you have comprehensive information
+**ACCOUNTABILITY ENFORCEMENT:**
+- Call out time-wasting patterns: "You mentioned playing games - how does this serve your goals?"
+- Demand specific evidence: "Show me the completed deliverable, not just a status update"
+- Challenge unrealistic timelines: "Based on your track record, is this timeline realistic?"
+- Identify productivity killers: "What unproductive activities will you eliminate to make time?"
 
-For task completion, always enforce STRICT EVIDENCE COLLECTION:
-- NO generic responses like "I finished it" or "It's done"
-- REQUIRE tangible proof: screenshots, documents, PDFs, emails, call logs, detailed descriptions
-- REJECT completion attempts without substantial evidence
-- DEMAND specific details about what was accomplished
+**FOR TASK COMPLETION - ZERO TOLERANCE FOR FLUFF:**
+- REJECT: "I worked on it" or "Made progress"
+- REQUIRE: Screenshots, documents, measurable outcomes, specific results
+- ASK: "What exactly did you accomplish? Show me the proof."
+- CHALLENGE: "How does this move you closer to your ultimate goal?"
 
-Be direct, thorough, and uncompromising about gathering complete information. Better to ask 3-5 clarifying questions upfront than create poorly planned tasks.`;
+Be professionally direct, results-focused, and uncompromising about accountability. Your job is to eliminate BS and drive measurable results.`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o",

@@ -41,27 +41,28 @@ export function EvidenceCollectionDialog({
   const validateEvidence = (): boolean => {
     setValidationError("");
     
-    // Check for generic/invalid descriptions
-    const invalidPhrases = [
+    // Dan Pena-style accountability validation - reject BS responses
+    const bsPatterns = [
       "i did that", "but i did that", "completed", "done", "finished", 
       "i finished", "i completed", "task done", "work done", "all done",
-      "its done", "it's done", "i did it", "did it", "already did"
+      "its done", "it's done", "i did it", "did it", "already did",
+      "worked on it", "made progress", "almost done", "nearly finished"
     ];
     
-    if (description.trim().length < 10) {
-      setValidationError("Description must be at least 10 characters and provide specific details of what was accomplished.");
+    if (description.trim().length < 15) {
+      setValidationError("INSUFFICIENT DETAIL - This brief response shows lack of accountability. Success requires precision - provide substantial evidence of what was accomplished.");
       return false;
     }
     
     const descLower = description.toLowerCase();
-    if (invalidPhrases.some(phrase => descLower.includes(phrase))) {
-      setValidationError("Generic responses like 'I did that' are not valid evidence. Please describe specifically what was accomplished with concrete details.");
+    if (bsPatterns.some(phrase => descLower.includes(phrase))) {
+      setValidationError("REJECTED - This generic response is exactly what leads to failure. I need SPECIFIC deliverables: What files did you create? What problems did you solve? What measurable outcome was achieved?");
       return false;
     }
     
-    // Must have at least one attachment OR very detailed description (50+ chars)
-    if (attachments.length === 0 && description.trim().length < 50) {
-      setValidationError("Evidence required: Please attach proof (screenshot, document, email, etc.) OR provide a detailed description of at least 50 characters explaining exactly what was done.");
+    // Demand either attachments OR substantial description (75+ chars)
+    if (attachments.length === 0 && description.trim().length < 75) {
+      setValidationError("INADEQUATE PROOF - Either provide screenshots/documents OR detailed evidence (75+ characters). Accountability means showing tangible results - what specific deliverable can you prove was completed?");
       return false;
     }
     
@@ -113,11 +114,11 @@ export function EvidenceCollectionDialog({
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            Task Completion Evidence
+            <CheckCircle className="h-5 w-5 text-red-600" />
+            ACCOUNTABILITY CHECK - Evidence Required
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
-            You've marked "{taskTitle}" as complete. Please provide evidence of completion.
+          <p className="text-sm text-red-700 font-medium">
+            "{taskTitle}" - No generic "I finished it" claims allowed. Show me SPECIFIC proof of what was delivered. Results matter, excuses don't.
           </p>
         </DialogHeader>
 
@@ -135,22 +136,22 @@ export function EvidenceCollectionDialog({
             <Label htmlFor="description">Detailed Completion Summary *</Label>
             <Textarea
               id="description"
-              placeholder="Provide specific details: What exactly did you accomplish? What steps were taken? What was the outcome? Include names, numbers, specific actions taken, results achieved, etc."
+              placeholder="SPECIFICS ONLY: What EXACTLY was delivered? What measurable outcomes were achieved? Include names, numbers, files created, problems solved, specific actions taken, concrete results. No fluff, no generalities."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="min-h-[120px]"
             />
-            <p className="text-xs text-muted-foreground">
-              Generic responses like "I did that" or "completed" are not acceptable. Provide concrete details of your work.
+            <p className="text-xs text-red-600 font-medium">
+              ZERO TOLERANCE for vague responses like "I did that" or "completed". Provide measurable outcomes and specific deliverables only.
             </p>
           </div>
 
           {/* Evidence Collection Options */}
           <div className="space-y-4">
             <div>
-              <Label>Evidence Attachments (Required for accountability)</Label>
-              <p className="text-xs text-muted-foreground mt-1">
-                Attach proof of work: screenshots, documents, emails, call logs, or other files that demonstrate completion
+              <Label>Evidence Attachments (MANDATORY for accountability)</Label>
+              <p className="text-xs text-red-600 font-medium mt-1">
+                Show tangible proof: screenshots, documents, emails, call logs, or files that demonstrate MEASURABLE results
               </p>
             </div>
             

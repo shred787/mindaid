@@ -67,14 +67,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
-      // Evidence-based completion validation - ALL task completions require evidence
+      // ACCOUNTABILITY-BASED completion validation - Dan Pena methodology  
       if (updates.completed === true) {
         if (!req.body.evidence) {
           const currentTask = await storage.getTask(id);
           return res.status(409).json({ 
-            error: "Evidence required",
+            error: "EVIDENCE REQUIRED - No vague 'it's done' claims allowed",
             requiresEvidence: true,
-            taskTitle: currentTask?.title || "Task"
+            taskTitle: currentTask?.title || "Task",
+            accountabilityMessage: "Results matter, excuses don't. Show me the proof."
           });
         }
 
@@ -82,34 +83,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const evidence = req.body.evidence;
         if (!evidence.description?.trim()) {
           return res.status(400).json({
-            error: "Evidence description is required. Please provide specific details of what was accomplished."
+            error: "UNACCEPTABLE - Evidence description is mandatory. What exactly did you deliver?",
+            accountabilityMessage: "Vague goals produce vague results. Be specific about your accomplishments."
           });
         }
 
-        const invalidPhrases = [
+        const bsPatterns = [
           "i did that", "but i did that", "completed", "done", "finished", 
           "i finished", "i completed", "task done", "work done", "all done",
-          "its done", "it's done", "i did it", "did it", "already did"
+          "its done", "it's done", "i did it", "did it", "already did",
+          "worked on it", "made progress", "almost done", "nearly finished"
         ];
         
         const descLower = evidence.description.toLowerCase();
-        if (invalidPhrases.some(phrase => descLower.includes(phrase))) {
+        if (bsPatterns.some(phrase => descLower.includes(phrase))) {
           return res.status(400).json({
-            error: "Generic responses like 'I did that' are not valid evidence. Please provide specific details of what was accomplished."
+            error: "REJECTED - This generic response is exactly what leads to failure",
+            accountabilityMessage: "I need SPECIFIC deliverables: What files did you create? What problems did you solve? What measurable outcome was achieved?"
           });
         }
         
-        if (evidence.description.length < 10) {
+        if (evidence.description.length < 15) {
           return res.status(400).json({
-            error: "Evidence description must be at least 10 characters and provide specific details."
+            error: "INSUFFICIENT DETAIL - This brief response shows lack of accountability",
+            accountabilityMessage: "Success requires precision. Provide substantial evidence of what was accomplished."
           });
         }
         
-        // Must have attachments OR detailed description (50+ chars)
+        // Demand either attachments OR substantial description (75+ chars)
         if ((!evidence.attachments || evidence.attachments.length === 0) && 
-            evidence.description.length < 50) {
+            evidence.description.length < 75) {
           return res.status(400).json({
-            error: "Evidence required: Please attach proof (screenshot, document, email, etc.) OR provide a detailed description of at least 50 characters."
+            error: "INADEQUATE PROOF - Either provide screenshots/documents OR detailed evidence (75+ characters)",
+            accountabilityMessage: "Accountability means showing tangible results. What specific deliverable can you prove was completed?"
           });
         }
       }
