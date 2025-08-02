@@ -50,6 +50,7 @@ export function CalendarView() {
       if (error?.response?.data?.challenge && error?.response?.data?.requiresJustification) {
         const task = tasks.find(t => t.id === variables.taskId);
         if (task) {
+          console.log("Setting challenge dialog with:", error.response.data.challenge);
           setChallenge({
             task,
             challenge: error.response.data.challenge.challenge,
