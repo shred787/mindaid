@@ -493,6 +493,25 @@ export class DatabaseStorage implements IStorage {
       activeHardAlerts: activeHardAlertsCount.length,
     };
   }
+
+  // Clear all data for fresh start
+  async clearAllData(): Promise<void> {
+    try {
+      // Delete all data from tables in correct order (respecting foreign keys)
+      await db.delete(notifications);
+      await db.delete(checkIns);
+      await db.delete(revenueEntries);
+      await db.delete(messages);
+      await db.delete(tasks);
+      await db.delete(projects);
+      await db.delete(clients);
+      
+      console.log("✅ All test data cleared - ready for real business data");
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

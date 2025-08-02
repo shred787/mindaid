@@ -441,5 +441,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }, 60 * 60 * 1000); // Every hour
 
+  // Development data cleanup endpoint
+  app.delete("/api/data/clear-all", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      res.json({ message: "All test data cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      res.status(500).json({ error: "Failed to clear data" });
+    }
+  });
+
   return httpServer;
 }
