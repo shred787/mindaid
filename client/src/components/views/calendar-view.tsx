@@ -332,6 +332,16 @@ export function CalendarView() {
                           <Button
                             variant={task.completed ? "outline" : "default"}
                             onClick={() => {
+                              const subtasks = getSubtasks(task);
+                              const incompleteSubtasks = subtasks.filter(st => !st.completed);
+                              
+                              // If this is a project with incomplete subtasks, show confirmation
+                              if (subtasks.length > 0 && !task.completed && incompleteSubtasks.length > 0) {
+                                if (!confirm(`This project has ${incompleteSubtasks.length} incomplete subtasks. Mark the entire project as complete anyway? (Subtasks will remain independent)`)) {
+                                  return;
+                                }
+                              }
+                              
                               updateTaskMutation.mutate({
                                 taskId: task.id,
                                 updates: { completed: !task.completed }
@@ -339,7 +349,13 @@ export function CalendarView() {
                             }}
                             disabled={updateTaskMutation.isPending}
                           >
-                            {task.completed ? "Mark Incomplete" : "Mark Complete"}
+                            {(() => {
+                              const subtasks = getSubtasks(task);
+                              if (subtasks.length > 0) {
+                                return task.completed ? "Mark Project Incomplete" : "Mark Project Complete";
+                              }
+                              return task.completed ? "Mark Incomplete" : "Mark Complete";
+                            })()}
                           </Button>
                           <Button variant="outline" onClick={() => handleEdit(task)}>
                             Edit Task

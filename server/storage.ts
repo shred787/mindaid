@@ -188,11 +188,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTask(id: string, updates: Partial<InsertTask>): Promise<Task> {
+    // Get the current task to check if it's a project
+    const currentTask = await this.getTask(id);
+    if (!currentTask) {
+      throw new Error("Task not found");
+    }
+
+    // Check if there are subtasks for this project
+    const subtasks = await db.select().from(tasks).where(eq(tasks.projectId, id));
+    const isProject = subtasks.length > 0;
+
+    // If attempting to complete a project that has incomplete subtasks, show appropriate behavior
+    if (isProject && updates.completed === true) {
+      const incompleteSubtasks = subtasks.filter(t => !t.completed);
+      
+      if (incompleteSubtasks.length > 0) {
+        console.log(`Warning: Marking project complete with ${incompleteSubtasks.length} incomplete subtasks`);
+        // Allow project completion but keep subtasks independent
+        // This enables project-level milestone tracking while preserving granular task progress
+      }
+    }
+
+    // Update the task
     const [task] = await db
       .update(tasks)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(tasks.id, id))
       .returning();
+
     return task;
   }
 
