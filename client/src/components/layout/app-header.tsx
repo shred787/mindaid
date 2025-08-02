@@ -71,7 +71,7 @@ export function AppHeader() {
           <div className="flex items-center cursor-pointer hover:opacity-80 transition-opacity">
             <div className="min-w-0">
               <h1 className="font-bold text-sm sm:text-lg text-primary-foreground truncate">Productivity Pro</h1>
-              <p className="text-primary-foreground/70 text-xs sm:text-sm hidden sm:block">Productivity Pro Accountability System</p>
+              <p className="text-primary-foreground/70 text-xs sm:text-sm hidden sm:block">Accountability System</p>
             </div>
           </div>
         </Link>
