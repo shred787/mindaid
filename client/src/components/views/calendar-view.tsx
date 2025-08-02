@@ -3,15 +3,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Task } from "@shared/schema";
-import { Clock, DollarSign, Calendar } from "lucide-react";
+import { Clock, DollarSign, Calendar, Eye, CheckCircle, Circle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import "react-day-picker/dist/style.css";
 
 export function CalendarView() {
   // Initialize with August 1st, 2025 since that's when the tasks are scheduled
   const [selectedDate, setSelectedDate] = useState<Date>(new Date('2025-08-01'));
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const queryClient = useQueryClient();
 
   const { data: tasks = [] } = useQuery<Task[]>({
@@ -139,24 +141,21 @@ export function CalendarView() {
                   return new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime();
                 })
                 .map((task) => (
-                  <div
-                    key={task.id}
-                    className="border rounded-lg p-3 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={task.completed}
-                          onCheckedChange={(checked) => {
-                            console.log("Checkbox clicked:", task.id, checked);
-                            updateTaskMutation.mutate({
-                              taskId: task.id,
-                              updates: { completed: checked as boolean }
-                            });
-                          }}
-                        />
-                        <h4 className="font-medium text-gray-900">{task.title}</h4>
-                      </div>
+                  <Dialog key={task.id}>
+                    <DialogTrigger asChild>
+                      <div
+                        className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => setSelectedTask(task)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            {task.completed ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-gray-400" />
+                            )}
+                            <h4 className="font-medium text-gray-900">{task.title}</h4>
+                          </div>
                       <div className="flex items-center space-x-2">
                         {task.priority >= 4 && (
                           <Badge variant="destructive" className="text-xs">
@@ -181,8 +180,83 @@ export function CalendarView() {
                         {task.scheduledEnd && ` - ${formatTime(task.scheduledEnd)}`}
                       </span>
                       <span>{task.estimatedMinutes}m</span>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center space-x-2">
+                          <span>{task.title}</span>
+                          <Badge variant={task.completed ? "secondary" : "destructive"}>
+                            {task.completed ? "Complete" : "Pending"}
+                          </Badge>
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        {/* Task Description */}
+                        {task.description && (
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Description</h3>
+                            <p className="text-gray-600">{task.description}</p>
+                          </div>
+                        )}
+                        
+                        {/* Task Details Grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Priority</h3>
+                            <Badge variant={task.priority >= 4 ? "destructive" : "secondary"}>
+                              {task.priority >= 4 ? "High" : "Normal"} ({task.priority}/5)
+                            </Badge>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Status</h3>
+                            <span className="text-gray-600 capitalize">{task.status}</span>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Estimated Time</h3>
+                            <span className="text-gray-600">{task.estimatedMinutes || 0} minutes</span>
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Revenue Impact</h3>
+                            <span className="text-gray-600">${Number(task.revenueImpact || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Schedule Information */}
+                        {task.scheduledStart && (
+                          <div>
+                            <h3 className="font-medium text-sm text-gray-700 mb-1">Schedule</h3>
+                            <div className="text-gray-600">
+                              <div>Start: {formatTime(task.scheduledStart)} on {new Date(task.scheduledStart).toLocaleDateString()}</div>
+                              {task.scheduledEnd && (
+                                <div>End: {formatTime(task.scheduledEnd)} on {new Date(task.scheduledEnd).toLocaleDateString()}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex space-x-2 pt-4">
+                          <Button
+                            variant={task.completed ? "outline" : "default"}
+                            onClick={() => {
+                              updateTaskMutation.mutate({
+                                taskId: task.id,
+                                updates: { completed: !task.completed }
+                              });
+                            }}
+                            disabled={updateTaskMutation.isPending}
+                          >
+                            {task.completed ? "Mark Incomplete" : "Mark Complete"}
+                          </Button>
+                          <Button variant="outline">
+                            Edit Task
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 ))}
             </div>
           )}
