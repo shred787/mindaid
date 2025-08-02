@@ -106,9 +106,9 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
   return (
     <div className="flex-1 pb-24">
       {/* Daily Summary Card */}
-      <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+      <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
         <Card className="shadow-sm">
-          <CardContent className="p-4">
+          <CardContent className="p-2 sm:p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800 flex items-center">
                 <Calendar className="mr-2 h-4 w-4" />
@@ -141,7 +141,7 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
       </div>
 
       {/* Chat Messages */}
-      <div className="px-4 pt-4 space-y-4" style={{ height: "calc(100vh - 280px)", overflowY: "auto" }}>
+      <div className="px-2 sm:px-4 pt-2 sm:pt-4 space-y-3 sm:space-y-4" style={{ height: "calc(100vh - 280px)", overflowY: "auto" }}>
         
         {/* Welcome message if no messages */}
         {chatMessages.length === 0 && (
@@ -150,7 +150,7 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
               <i className="fas fa-robot text-white text-sm"></i>
             </div>
             <div className="flex-1">
-              <div className="bg-gray-100 rounded-xl rounded-tl-sm p-3 max-w-xs">
+              <div className="bg-gray-100 rounded-xl rounded-tl-sm p-2 sm:p-3 max-w-xs">
                 <p className="text-sm text-gray-800">
                   Good morning! I'm here to help you manage your tasks and maximize your productivity. 
                   What would you like to work on today?

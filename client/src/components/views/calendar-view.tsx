@@ -125,7 +125,7 @@ export function CalendarView() {
   };
 
   return (
-    <div className="p-4 space-y-4 pb-24">
+    <div className="p-2 sm:p-4 space-y-3 sm:space-y-4 pb-24">
       {/* Calendar */}
       <Card>
         <CardHeader>
@@ -157,13 +157,13 @@ export function CalendarView() {
                 day: "numeric",
               })}
             </span>
-            <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
               <div className="flex items-center space-x-1">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{Math.round(getTotalTime(tasksForSelectedDate) / 60)}h</span>
               </div>
               <div className="flex items-center space-x-1">
-                <DollarSign className="h-4 w-4" />
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>${getTotalRevenue(tasksForSelectedDate).toLocaleString()}</span>
               </div>
             </div>
@@ -228,7 +228,7 @@ export function CalendarView() {
                         </div>
                       </div>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
                       <DialogHeader>
                         <DialogTitle className="flex items-center space-x-2">
                           <span>{task.title}</span>
