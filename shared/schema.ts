@@ -3,7 +3,6 @@ import { pgTable, text, varchar, timestamp, integer, decimal, boolean, jsonb } f
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { z } from "zod";
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

@@ -35,7 +35,7 @@ interface UserProfile {
     end: string;
   };
   productivityGoals: string[];
-  accountabilityLevel: 'light' | 'moderate' | 'strict';
+
   preferredMethods: string[];
   
   // Social Information
@@ -80,7 +80,7 @@ export default function UserProfile() {
       end: "17:00"
     },
     productivityGoals: ["Increase Productivity", "Better Time Management", "Stronger Accountability"],
-    accountabilityLevel: 'strict',
+
     preferredMethods: ["Evidence Screenshots", "Document Uploads", "Time Tracking"],
     
     // Social Information
@@ -201,13 +201,7 @@ export default function UserProfile() {
                   <h2 className="text-2xl font-bold">
                     {profile.firstName} {profile.lastName}
                   </h2>
-                  <Badge 
-                    variant={profile.accountabilityLevel === 'strict' ? 'destructive' : 
-                             profile.accountabilityLevel === 'moderate' ? 'default' : 'secondary'}
-                  >
-                    {profile.accountabilityLevel === 'strict' ? 'Maximum Accountability' : 
-                     profile.accountabilityLevel === 'moderate' ? 'Balanced' : 'Gentle'}
-                  </Badge>
+
                 </div>
                 <p className="text-muted-foreground mb-3">{profile.jobTitle} at {profile.company}</p>
                 <p className="text-sm mb-4">{profile.bio}</p>
@@ -473,21 +467,6 @@ export default function UserProfile() {
                         {goal}
                       </Badge>
                     ))}
-                  </div>
-                </div>
-
-                <div>
-                  <Label>Accountability Level</Label>
-                  <div className="mt-2">
-                    <Badge 
-                      variant={profile.accountabilityLevel === 'strict' ? 'destructive' : 
-                               profile.accountabilityLevel === 'moderate' ? 'default' : 'secondary'}
-                      className="text-sm"
-                    >
-                      {profile.accountabilityLevel === 'strict' ? 'Maximum Accountability - Zero tolerance for excuses' : 
-                       profile.accountabilityLevel === 'moderate' ? 'Balanced - Professional accountability' : 
-                       'Gentle - Supportive encouragement'}
-                    </Badge>
                   </div>
                 </div>
 
