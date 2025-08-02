@@ -67,13 +67,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
       
       // Evidence-based completion validation - ALL task completions require evidence
-      if (updates.completed === true && !req.body.evidence) {
-        const currentTask = await storage.getTask(id);
-        return res.status(409).json({ 
-          error: "Evidence required",
-          requiresEvidence: true,
-          taskTitle: currentTask?.title || "Task"
-        });
+      if (updates.completed === true) {
+        if (!req.body.evidence) {
+          const currentTask = await storage.getTask(id);
+          return res.status(409).json({ 
+            error: "Evidence required",
+            requiresEvidence: true,
+            taskTitle: currentTask?.title || "Task"
+          });
+        }
+
+        // Validate against generic responses - NO EXCEPTIONS
+        const evidence = req.body.evidence;
+        if (!evidence.description?.trim()) {
+          return res.status(400).json({
+            error: "Evidence description is required. Please provide specific details of what was accomplished."
+          });
+        }
+
+        const invalidPhrases = [
+          "i did that", "but i did that", "completed", "done", "finished", 
+          "i finished", "i completed", "task done", "work done", "all done",
+          "its done", "it's done", "i did it", "did it", "already did"
+        ];
+        
+        const descLower = evidence.description.toLowerCase();
+        if (invalidPhrases.some(phrase => descLower.includes(phrase))) {
+          return res.status(400).json({
+            error: "Generic responses like 'I did that' are not valid evidence. Please provide specific details of what was accomplished."
+          });
+        }
+        
+        if (evidence.description.length < 10) {
+          return res.status(400).json({
+            error: "Evidence description must be at least 10 characters and provide specific details."
+          });
+        }
+        
+        // Must have attachments OR detailed description (50+ chars)
+        if ((!evidence.attachments || evidence.attachments.length === 0) && 
+            evidence.description.length < 50) {
+          return res.status(400).json({
+            error: "Evidence required: Please attach proof (screenshot, document, email, etc.) OR provide a detailed description of at least 50 characters."
+          });
+        }
       }
       
       // If evidence is provided with completion, add it to the updates
