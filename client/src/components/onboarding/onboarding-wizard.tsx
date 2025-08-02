@@ -167,7 +167,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   <Badge
                     key={service}
                     variant={data.primaryServices.includes(service) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      data.primaryServices.includes(service) 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                        : "border-border bg-background text-foreground hover:bg-muted"
+                    }`}
                     onClick={() => updateData({ 
                       primaryServices: toggleArrayItem(data.primaryServices, service) 
                     })}
@@ -201,7 +205,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   <Badge
                     key={type}
                     variant={data.clientTypes.includes(type) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      data.clientTypes.includes(type) 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                        : "border-border bg-background text-foreground hover:bg-muted"
+                    }`}
                     onClick={() => updateData({ 
                       clientTypes: toggleArrayItem(data.clientTypes, type) 
                     })}
@@ -235,7 +243,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                   <Badge
                     key={goal}
                     variant={data.goals.includes(goal) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    className={`cursor-pointer ${
+                      data.goals.includes(goal) 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                        : "border-border bg-background text-foreground hover:bg-muted"
+                    }`}
                     onClick={() => updateData({ 
                       goals: toggleArrayItem(data.goals, goal) 
                     })}
