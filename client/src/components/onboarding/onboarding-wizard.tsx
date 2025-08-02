@@ -311,7 +311,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           variant="outline" 
           onClick={() => setStep(Math.max(1, step - 1))}
           disabled={step === 1}
-          className="border-border bg-background text-foreground hover:bg-muted"
+          className="bg-blue-600 text-white border-blue-600 hover:bg-gray-500 hover:border-gray-500 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-300"
         >
           Back
         </Button>
@@ -320,7 +320,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <Button 
             onClick={() => setStep(step + 1)}
             disabled={step === 1 && (!data.businessName || !data.businessType)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-blue-600 text-white hover:bg-gray-500 disabled:bg-gray-300 disabled:text-gray-500"
           >
             Next
           </Button>
@@ -328,7 +328,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <Button 
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-600 dark:text-white dark:hover:bg-green-700"
+            className="bg-green-600 text-white hover:bg-gray-500 disabled:bg-gray-300 disabled:text-gray-500"
           >
             {isSubmitting ? "Setting up..." : "Complete Setup"}
           </Button>
