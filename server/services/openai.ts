@@ -67,7 +67,7 @@ class OpenAIService {
 
 This is exactly the kind of vague planning that leads to failure. I need SPECIFIC details:
 
-${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}
 
 Remember: Vague goals produce vague results. Success requires precision. What unproductive activities will you eliminate to make time for this? 
 
@@ -117,7 +117,7 @@ Provide complete answers so we can create a RESULTS-DRIVEN plan.`;
                 scheduledEnd: subtaskEnd,
                 estimatedMinutes: subtask.estimatedMinutes,
                 priority: subtask.priority,
-                revenueImpact: "0" // Removed revenue tracking
+                status: "pending"
               });
               subtasks.push(createdSubtask);
             }
@@ -307,7 +307,6 @@ If NOT a task: {"isTask": false}`;
 
 Task: ${request.description}
 Estimated time: ${request.estimatedTime || 'not specified'} minutes
-Priority level: ${request.priority || 'not specified'} (1-5 scale)
 
 Please provide a JSON response with the following structure:
 {
@@ -348,6 +347,63 @@ Focus on:
         }],
         totalTime: request.estimatedTime || 60,
         recommendations: ["Break this task down further when you have more details."],
+      };
+    }
+  }
+
+  async analyzeCompletionEvidence(evidence: string, taskTitle: string): Promise<{
+    followUpTasks: Array<{
+      title: string;
+      description: string;
+      scheduledStart: string;
+      scheduledEnd: string;
+      estimatedMinutes: number;
+      priority: number;
+    }>;
+    insights: string[];
+  }> {
+    try {
+      const prompt = `Analyze this task completion evidence for follow-up actions:
+
+Original Task: ${taskTitle}
+Completion Evidence: ${evidence}
+
+Look for:
+1. Mentioned future actions/deadlines (e.g., "finalizing tomorrow", "follow up next week")
+2. Dependencies that need completion (e.g., "waiting for client approval", "need to send contract")
+3. Next logical steps in the workflow
+4. Specific dates or timeframes mentioned
+
+Provide a JSON response:
+{
+  "followUpTasks": [
+    {
+      "title": "Clear, actionable task title",
+      "description": "Specific description of what needs to be done",
+      "scheduledStart": "ISO date string (default to next business day if no specific date mentioned)",
+      "scheduledEnd": "ISO date string (estimated completion time)",
+      "estimatedMinutes": number,
+      "priority": number (1-5, where 5 is highest)
+    }
+  ],
+  "insights": ["Array of insights about the completion and next steps"]
+}
+
+Focus on extracting ACTIONABLE follow-up tasks only. Don't create generic "check status" tasks.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const analysis = JSON.parse(response.choices[0].message.content || "{}");
+      return analysis;
+    } catch (error) {
+      console.error("Evidence analysis error:", error);
+      return {
+        followUpTasks: [],
+        insights: []
       };
     }
   }
@@ -533,20 +589,15 @@ Be business-focused and help them make better decisions.`;
       const completedTasks = tasks.filter(t => t.completed);
       const pendingTasks = tasks.filter(t => !t.completed);
 
-      const totalRevenue = tasks.reduce((sum, task) => 
-        sum + (Number(task.revenueImpact) || 0), 0
-      );
-      
-      const completedRevenue = completedTasks.reduce((sum, task) =>
-        sum + (Number(task.revenueImpact) || 0), 0
-      );
+      const totalTasks = tasks.length;
+      const completedTaskCount = completedTasks.length;
 
-      const prompt = `Analyze this business data and provide cash flow insights:
+      const prompt = `Analyze this business data and provide productivity insights:
 
-Total potential revenue: $${totalRevenue}
-Completed revenue: $${completedRevenue}
+Total tasks: ${totalTasks}
+Completed tasks: ${completedTaskCount}
 Pending tasks: ${pendingTasks.length}
-Completion rate: ${Math.round((completedTasks.length / tasks.length) * 100)}%
+Completion rate: ${Math.round((completedTaskCount / totalTasks) * 100)}%
 
 Provide a JSON response:
 {
@@ -566,7 +617,7 @@ Focus on productivity improvements and revenue optimization.`;
       const analysis = JSON.parse(response.choices[0].message.content || "{}");
       return {
         insight: analysis.insight || "Keep up the great work on your tasks!",
-        projectedRevenue: analysis.projectedRevenue || totalRevenue,
+        projectedRevenue: analysis.projectedRevenue || 0,
         recommendations: analysis.recommendations || ["Focus on high-value tasks first"],
       };
     } catch (error) {

@@ -120,9 +120,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // If evidence is provided with completion, add it to the updates
+      // If evidence is provided with completion, add it to the updates and analyze for follow-ups
       if (updates.completed === true && req.body.evidence) {
         updates.completionEvidence = req.body.evidence;
+        
+        // Analyze evidence for follow-up tasks
+        try {
+          const currentTask = await storage.getTask(id);
+          if (currentTask) {
+            const analysis = await openaiService.analyzeCompletionEvidence(
+              req.body.evidence.description, 
+              currentTask.title
+            );
+            
+            // Create follow-up tasks automatically
+            const createdFollowUps = [];
+            for (const followUpTask of analysis.followUpTasks) {
+              const createdTask = await storage.createTask({
+                ...followUpTask,
+                userId: demoUser.id,
+                scheduledStart: new Date(followUpTask.scheduledStart),
+                scheduledEnd: new Date(followUpTask.scheduledEnd),
+                status: "pending"
+              });
+              createdFollowUps.push(createdTask);
+            }
+            
+            // Add follow-up info to response
+            updates.followUpTasks = createdFollowUps;
+            updates.analysisInsights = analysis.insights;
+          }
+        } catch (error) {
+          console.error("Follow-up task creation error:", error);
+          // Continue with normal completion even if follow-up creation fails
+        }
       }
       
       const task = await storage.updateTask(id, updates);
