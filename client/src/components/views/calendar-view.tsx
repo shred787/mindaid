@@ -1,18 +1,30 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Task } from "@shared/schema";
 import { Clock, DollarSign, Calendar } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import "react-day-picker/dist/style.css";
 
 export function CalendarView() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const queryClient = useQueryClient();
 
   const { data: tasks = [] } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", selectedDate?.toISOString().split('T')[0]],
-    enabled: !!selectedDate,
+    queryKey: ["/api/tasks"],
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, updates }: { taskId: string; updates: Partial<Task> }) => {
+      return apiRequest("PATCH", `/api/tasks/${taskId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/overview"] });
+    },
   });
 
   const tasksForSelectedDate = tasks.filter(task => {
@@ -126,7 +138,18 @@ export function CalendarView() {
                     className="border rounded-lg p-3 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">{task.title}</h4>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={task.completed}
+                          onCheckedChange={(checked) => {
+                            updateTaskMutation.mutate({
+                              taskId: task.id,
+                              updates: { completed: checked as boolean }
+                            });
+                          }}
+                        />
+                        <h4 className="font-medium text-gray-900">{task.title}</h4>
+                      </div>
                       <div className="flex items-center space-x-2">
                         {task.priority >= 4 && (
                           <Badge variant="destructive" className="text-xs">
