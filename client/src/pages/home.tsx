@@ -7,6 +7,9 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { CalendarView } from "@/components/views/calendar-view";
 import { TimelineView } from "@/components/views/timeline-view";
 import { CashFlowView } from "@/components/views/cashflow-view";
+import { HardAlertOverlay } from "@/components/alerts/hard-alert-overlay";
+import { RevenueDashboard } from "@/components/revenue/revenue-dashboard";
+import { CheckInSystem } from "@/components/accountability/check-in-system";
 import { ViewMode } from "@/types";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +57,10 @@ export default function Home() {
         return <TimelineView />;
       case "cashflow":
         return <CashFlowView />;
+      case "revenue":
+        return <RevenueDashboard />;
+      case "accountability":
+        return <CheckInSystem />;
       default:
         return <ChatInterface />;
     }
@@ -61,6 +68,7 @@ export default function Home() {
 
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl relative">
+      <HardAlertOverlay />
       <AppHeader />
       <ViewSelector currentView={currentView} onViewChange={setCurrentView} />
       {renderCurrentView()}

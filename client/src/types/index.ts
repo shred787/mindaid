@@ -29,7 +29,7 @@ export interface WebSocketMessage {
   data: any;
 }
 
-export type ViewMode = "chat" | "calendar" | "gantt" | "cashflow";
+export type ViewMode = "chat" | "calendar" | "gantt" | "cashflow" | "revenue" | "accountability";
 
 export interface VoiceRecognitionResult {
   transcript: string;

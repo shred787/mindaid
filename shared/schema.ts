@@ -66,11 +66,51 @@ export const messages = pgTable("messages", {
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
-  type: text("type").notNull(), // check_in, task_reminder, urgent_alert, cash_flow_insight
+  type: text("type").notNull(), // check_in, task_reminder, urgent_alert, cash_flow_insight, hard_alert, deadline_warning
   title: text("title").notNull(),
   message: text("message").notNull(),
   priority: integer("priority").default(1).notNull(), // 1-5 scale, 5 being emergency
   acknowledged: boolean("acknowledged").default(false).notNull(),
+  dismissible: boolean("dismissible").default(true).notNull(), // hard alerts cannot be dismissed
+  actionRequired: boolean("action_required").default(false).notNull(),
+  relatedTaskId: varchar("related_task_id"),
+  relatedProjectId: varchar("related_project_id"),
+  expiresAt: timestamp("expires_at"), // for time-sensitive alerts
+  createdAt: timestamp("created_at").default(sql`now()`).notNull(),
+});
+
+// Add revenue tracking table
+export const revenueEntries = pgTable("revenue_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  clientId: varchar("client_id"),
+  projectId: varchar("project_id"),
+  taskId: varchar("task_id"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  type: text("type").notNull(), // income, expense, projection
+  category: text("category"), // consulting, products, services, overhead, etc.
+  description: text("description"),
+  date: timestamp("date").notNull(),
+  isRecurring: boolean("is_recurring").default(false).notNull(),
+  recurringFrequency: text("recurring_frequency"), // weekly, monthly, quarterly, yearly
+  createdAt: timestamp("created_at").default(sql`now()`).notNull(),
+});
+
+// Add accountability tracking
+export const checkIns = pgTable("check_ins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  type: text("type").notNull(), // daily, weekly, project_milestone, emergency
+  prompt: text("prompt").notNull(),
+  response: text("response"),
+  mood: integer("mood"), // 1-5 scale
+  productivity: integer("productivity"), // 1-5 scale
+  blockers: text("blockers"),
+  wins: text("wins"),
+  nextSteps: text("next_steps"),
+  completed: boolean("completed").default(false).notNull(),
+  dueAt: timestamp("due_at").notNull(),
+  completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").default(sql`now()`).notNull(),
 });
 
@@ -81,6 +121,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   tasks: many(tasks),
   messages: many(messages),
   notifications: many(notifications),
+  revenueEntries: many(revenueEntries),
+  checkIns: many(checkIns),
 }));
 
 export const clientsRelations = relations(clients, ({ one, many }) => ({
@@ -126,6 +168,40 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
     fields: [notifications.userId],
     references: [users.id],
   }),
+  relatedTask: one(tasks, {
+    fields: [notifications.relatedTaskId],
+    references: [tasks.id],
+  }),
+  relatedProject: one(projects, {
+    fields: [notifications.relatedProjectId],
+    references: [projects.id],
+  }),
+}));
+
+export const revenueEntriesRelations = relations(revenueEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [revenueEntries.userId],
+    references: [users.id],
+  }),
+  client: one(clients, {
+    fields: [revenueEntries.clientId],
+    references: [clients.id],
+  }),
+  project: one(projects, {
+    fields: [revenueEntries.projectId],
+    references: [projects.id],
+  }),
+  task: one(tasks, {
+    fields: [revenueEntries.taskId],
+    references: [tasks.id],
+  }),
+}));
+
+export const checkInsRelations = relations(checkIns, ({ one }) => ({
+  user: one(users, {
+    fields: [checkIns.userId],
+    references: [users.id],
+  }),
 }));
 
 // Schemas
@@ -160,6 +236,21 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+export const insertRevenueEntrySchema = createInsertSchema(revenueEntries).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  date: z.coerce.date(),
+});
+
+export const insertCheckInSchema = createInsertSchema(checkIns).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  dueAt: z.coerce.date(),
+  completedAt: z.coerce.date().optional(),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -178,3 +269,9 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type RevenueEntry = typeof revenueEntries.$inferSelect;
+export type InsertRevenueEntry = z.infer<typeof insertRevenueEntrySchema>;
+
+export type CheckIn = typeof checkIns.$inferSelect;
+export type InsertCheckIn = z.infer<typeof insertCheckInSchema>;

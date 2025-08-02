@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 import { storage } from "./storage";
 import { openaiService } from "./services/openai";
 import { setupWebSocket } from "./services/websocket";
-import { insertMessageSchema, insertTaskSchema, insertNotificationSchema } from "@shared/schema";
+import { insertMessageSchema, insertTaskSchema, insertNotificationSchema, insertRevenueEntrySchema, insertCheckInSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -204,6 +204,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error testing task detection:", error);
       res.status(500).json({ error: "Failed to test task detection" });
+    }
+  });
+
+  // Revenue Tracking Routes
+  app.get("/api/revenue", async (req, res) => {
+    try {
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const entries = await storage.getRevenueEntries(demoUser.id, startDate, endDate);
+      res.json(entries);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch revenue entries" });
+    }
+  });
+
+  app.post("/api/revenue", async (req, res) => {
+    try {
+      const entryData = insertRevenueEntrySchema.parse({
+        ...req.body,
+        userId: demoUser.id,
+        amount: parseFloat(req.body.amount),
+      });
+      const entry = await storage.createRevenueEntry(entryData);
+      res.json(entry);
+    } catch (error) {
+      console.error("Revenue validation error:", error);
+      res.status(400).json({ error: "Invalid revenue entry data", details: error.message });
+    }
+  });
+
+  app.get("/api/revenue/stats/:period", async (req, res) => {
+    try {
+      const { period } = req.params;
+      if (!['month', 'quarter', 'year'].includes(period)) {
+        return res.status(400).json({ error: "Invalid period" });
+      }
+      const stats = await storage.getRevenueStats(demoUser.id, period as 'month' | 'quarter' | 'year');
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch revenue stats" });
+    }
+  });
+
+  // Check-in Routes
+  app.get("/api/checkins", async (req, res) => {
+    try {
+      const completed = req.query.completed === "true" ? true : 
+                      req.query.completed === "false" ? false : undefined;
+      const checkIns = await storage.getCheckIns(demoUser.id, completed);
+      res.json(checkIns);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch check-ins" });
+    }
+  });
+
+  app.post("/api/checkins", async (req, res) => {
+    try {
+      const checkInData = insertCheckInSchema.parse({
+        ...req.body,
+        userId: demoUser.id,
+      });
+      const checkIn = await storage.createCheckIn(checkInData);
+      res.json(checkIn);
+    } catch (error) {
+      console.error("Check-in validation error:", error);
+      res.status(400).json({ error: "Invalid check-in data", details: error.message });
+    }
+  });
+
+  app.patch("/api/checkins/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const checkIn = await storage.updateCheckIn(id, updates);
+      res.json(checkIn);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to update check-in" });
+    }
+  });
+
+  app.get("/api/checkins/overdue", async (req, res) => {
+    try {
+      const overdueCheckIns = await storage.getOverdueCheckIns(demoUser.id);
+      res.json(overdueCheckIns);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch overdue check-ins" });
+    }
+  });
+
+  // Hard Alerts Routes
+  app.post("/api/alerts/hard", async (req, res) => {
+    try {
+      const { title, message, relatedTaskId, relatedProjectId } = req.body;
+      const alert = await storage.createHardAlert(
+        demoUser.id, 
+        title, 
+        message, 
+        relatedTaskId, 
+        relatedProjectId
+      );
+      
+      // Broadcast to WebSocket clients immediately
+      wss.clients.forEach((client) => {
+        if (client.readyState === 1) { // WebSocket.OPEN
+          client.send(JSON.stringify({
+            type: "hard_alert",
+            data: alert
+          }));
+        }
+      });
+      
+      res.json(alert);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to create hard alert" });
+    }
+  });
+
+  app.get("/api/alerts/hard", async (req, res) => {
+    try {
+      const hardAlerts = await storage.getActiveHardAlerts(demoUser.id);
+      res.json(hardAlerts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch hard alerts" });
+    }
+  });
+
+  // Accountability System Routes
+  app.post("/api/accountability/deadline-warning", async (req, res) => {
+    try {
+      const { taskId, message } = req.body;
+      const task = await storage.getTask(taskId);
+      
+      if (task) {
+        const alert = await storage.createHardAlert(
+          demoUser.id,
+          "Deadline Warning",
+          message || `Task "${task.title}" is approaching its deadline!`,
+          taskId
+        );
+        
+        // Broadcast to WebSocket clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify({
+              type: "deadline_warning",
+              data: alert
+            }));
+          }
+        });
+        
+        res.json(alert);
+      } else {
+        res.status(404).json({ error: "Task not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create deadline warning" });
     }
   });
 
