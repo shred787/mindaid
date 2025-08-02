@@ -182,35 +182,39 @@ export function ChatInterface({ onNavigate }: ChatInterfaceProps) {
 
         {/* Urgent Alerts */}
         {urgentTasks.length > 0 && (
-          <AlertCard
-            type="urgent"
-            title="Urgent Tasks Pending"
-            message={`You have ${urgentTasks.length} urgent task${urgentTasks.length > 1 ? 's' : ''} that need immediate attention.`}
-            action={{
-              label: "View Tasks",
-              onClick: () => {
-                // Navigate to calendar view to see tasks
-                onNavigate?.("calendar");
-              },
-            }}
-          />
+          <div className="mb-6">
+            <AlertCard
+              type="urgent"
+              title="Urgent Tasks Pending"
+              message={`You have ${urgentTasks.length} urgent task${urgentTasks.length > 1 ? 's' : ''} that need immediate attention.`}
+              action={{
+                label: "View Tasks",
+                onClick: () => {
+                  // Navigate to calendar view to see tasks
+                  onNavigate?.("calendar");
+                },
+              }}
+            />
+          </div>
         )}
 
         {/* Cash Flow Insight */}
         {overview && overview.potentialRevenue > 0 && (
-          <AlertCard
-            type="cashflow"
-            title="Cash Flow Insight"
-            message="Completing today's tasks will improve your weekly revenue significantly"
-            data={{
-              amount: overview.potentialRevenue,
-              percentage: Math.round((overview.completedTasks / overview.taskCount) * 100) || 0,
-              progress: Math.round((overview.completedTasks / overview.taskCount) * 100) || 0,
-            }}
-          />
+          <div className="mb-6">
+            <AlertCard
+              type="cashflow"
+              title="Cash Flow Insight"
+              message="Completing today's tasks will improve your weekly revenue significantly"
+              data={{
+                amount: overview.potentialRevenue,
+                percentage: Math.round((overview.completedTasks / overview.taskCount) * 100) || 0,
+                progress: Math.round((overview.completedTasks / overview.taskCount) * 100) || 0,
+              }}
+            />
+          </div>
         )}
 
-        <div ref={chatEndRef} />
+        <div ref={chatEndRef} className="pb-6" />
       </div>
     </div>
   );
