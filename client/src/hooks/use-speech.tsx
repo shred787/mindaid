@@ -32,11 +32,12 @@ export function useSpeech(options: UseSpeechOptions = {}) {
         recognitionRef.current = new SpeechRecognition();
         
         const recognition = recognitionRef.current;
-        recognition.continuous = continuous;
-        recognition.interimResults = interimResults;
-        recognition.lang = language;
+        if (recognition) {
+          recognition.continuous = continuous;
+          recognition.interimResults = interimResults;
+          recognition.lang = language;
 
-        recognition.onresult = (event) => {
+          recognition.onresult = (event: any) => {
           let finalTranscript = "";
           let interimTranscript = "";
 
@@ -63,16 +64,16 @@ export function useSpeech(options: UseSpeechOptions = {}) {
           }
         };
 
-        recognition.onstart = () => {
-          setIsListening(true);
-        };
+          recognition.onstart = () => {
+            setIsListening(true);
+          };
 
-        recognition.onend = () => {
-          setIsListening(false);
-        };
+          recognition.onend = () => {
+            setIsListening(false);
+          };
 
-        recognition.onerror = (event) => {
-          console.error("Speech recognition error:", event.error);
+          recognition.onerror = (event: any) => {
+            console.error("Speech recognition error:", event.error);
           setIsListening(false);
           onError?.(event.error);
         };
