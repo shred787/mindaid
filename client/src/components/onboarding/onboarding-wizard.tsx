@@ -37,9 +37,9 @@ const commonServices = [
 ];
 
 const businessGoals = [
-  "Increase Revenue", "Improve Client Satisfaction", "Better Time Management", 
+  "Improve Client Satisfaction", "Better Time Management", 
   "Scale Operations", "Reduce Administrative Tasks", "Track Performance", 
-  "Better Project Delivery", "Enhance Communication"
+  "Better Project Delivery", "Enhance Communication", "Increase Productivity"
 ];
 
 const clientTypes = [
@@ -390,16 +390,15 @@ function getWelcomeTasks(data: OnboardingData, projectId: string): any[] {
   });
   
   // Goal-specific tasks
-  if (data.goals.includes("Increase Revenue")) {
+  if (data.goals.includes("Increase Productivity")) {
     tasks.push({
       projectId,
-      title: "Set Up Revenue Tracking System",
-      description: "Configure the revenue dashboard and add your first income/expense entries",
+      title: "Focus on High-Value Tasks",
+      description: "Identify and prioritize tasks that directly contribute to business growth and client satisfaction",
       priority: 3,
       estimatedMinutes: 30,
       scheduledStart: new Date(now.getTime() + 20 * 60000),
-      scheduledEnd: new Date(now.getTime() + 50 * 60000),
-      revenueImpact: "500.00"
+      scheduledEnd: new Date(now.getTime() + 50 * 60000)
     });
   }
   

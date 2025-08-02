@@ -261,45 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Revenue Tracking Routes
-  app.get("/api/revenue", async (req, res) => {
-    try {
-      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
-      const entries = await storage.getRevenueEntries(demoUser.id, startDate, endDate);
-      res.json(entries);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch revenue entries" });
-    }
-  });
 
-  app.post("/api/revenue", async (req, res) => {
-    try {
-      const entryData = insertRevenueEntrySchema.parse({
-        ...req.body,
-        userId: demoUser.id,
-        amount: parseFloat(req.body.amount),
-      });
-      const entry = await storage.createRevenueEntry(entryData);
-      res.json(entry);
-    } catch (error) {
-      console.error("Revenue validation error:", error);
-      res.status(400).json({ error: "Invalid revenue entry data", details: error instanceof Error ? error.message : String(error) });
-    }
-  });
-
-  app.get("/api/revenue/stats/:period", async (req, res) => {
-    try {
-      const { period } = req.params;
-      if (!['month', 'quarter', 'year'].includes(period)) {
-        return res.status(400).json({ error: "Invalid period" });
-      }
-      const stats = await storage.getRevenueStats(demoUser.id, period as 'month' | 'quarter' | 'year');
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch revenue stats" });
-    }
-  });
 
   // Check-in Routes
   app.get("/api/checkins", async (req, res) => {

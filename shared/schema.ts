@@ -21,7 +21,7 @@ export const clients = pgTable("clients", {
   phone: text("phone"),
   company: text("company"),
   importance: integer("importance").default(1).notNull(), // 1-5 scale
-  totalRevenue: decimal("total_revenue", { precision: 10, scale: 2 }).default("0").notNull(),
+
   createdAt: timestamp("created_at").default(sql`now()`).notNull(),
 });
 
@@ -32,7 +32,7 @@ export const projects = pgTable("projects", {
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").default("active").notNull(), // active, completed, on_hold
-  estimatedValue: decimal("estimated_value", { precision: 10, scale: 2 }),
+
   deadline: timestamp("deadline"),
   createdAt: timestamp("created_at").default(sql`now()`).notNull(),
 });
@@ -47,7 +47,7 @@ export const tasks = pgTable("tasks", {
   priority: integer("priority").default(1).notNull(), // 1-5 scale
   estimatedMinutes: integer("estimated_minutes"),
   actualMinutes: integer("actual_minutes"),
-  revenueImpact: decimal("revenue_impact", { precision: 10, scale: 2 }),
+
   scheduledStart: timestamp("scheduled_start"),
   scheduledEnd: timestamp("scheduled_end"),
   completed: boolean("completed").default(false).notNull(),
@@ -81,22 +81,7 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").default(sql`now()`).notNull(),
 });
 
-// Add revenue tracking table
-export const revenueEntries = pgTable("revenue_entries", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull(),
-  clientId: varchar("client_id"),
-  projectId: varchar("project_id"),
-  taskId: varchar("task_id"),
-  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-  type: text("type").notNull(), // income, expense, projection
-  category: text("category"), // consulting, products, services, overhead, etc.
-  description: text("description"),
-  date: timestamp("date").notNull(),
-  isRecurring: boolean("is_recurring").default(false).notNull(),
-  recurringFrequency: text("recurring_frequency"), // weekly, monthly, quarterly, yearly
-  createdAt: timestamp("created_at").default(sql`now()`).notNull(),
-});
+
 
 // Add accountability tracking
 export const checkIns = pgTable("check_ins", {
@@ -123,7 +108,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   tasks: many(tasks),
   messages: many(messages),
   notifications: many(notifications),
-  revenueEntries: many(revenueEntries),
+
   checkIns: many(checkIns),
 }));
 
@@ -180,24 +165,7 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
-export const revenueEntriesRelations = relations(revenueEntries, ({ one }) => ({
-  user: one(users, {
-    fields: [revenueEntries.userId],
-    references: [users.id],
-  }),
-  client: one(clients, {
-    fields: [revenueEntries.clientId],
-    references: [clients.id],
-  }),
-  project: one(projects, {
-    fields: [revenueEntries.projectId],
-    references: [projects.id],
-  }),
-  task: one(tasks, {
-    fields: [revenueEntries.taskId],
-    references: [tasks.id],
-  }),
-}));
+
 
 export const checkInsRelations = relations(checkIns, ({ one }) => ({
   user: one(users, {
@@ -241,12 +209,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
-export const insertRevenueEntrySchema = createInsertSchema(revenueEntries).omit({
-  id: true,
-  createdAt: true,
-}).extend({
-  date: z.coerce.date(),
-});
+
 
 export const insertCheckInSchema = createInsertSchema(checkIns).omit({
   id: true,
@@ -275,8 +238,7 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
-export type RevenueEntry = typeof revenueEntries.$inferSelect;
-export type InsertRevenueEntry = z.infer<typeof insertRevenueEntrySchema>;
+
 
 export type CheckIn = typeof checkIns.$inferSelect;
 export type InsertCheckIn = z.infer<typeof insertCheckInSchema>;

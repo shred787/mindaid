@@ -1,14 +1,13 @@
 import { eq, desc, and, gte, lte, sum, count, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
-  users, clients, projects, tasks, messages, notifications, revenueEntries, checkIns,
+  users, clients, projects, tasks, messages, notifications, checkIns,
   type User, type InsertUser,
   type Client, type InsertClient,
   type Project, type InsertProject,
   type Task, type InsertTask,
   type Message, type InsertMessage,
   type Notification, type InsertNotification,
-  type RevenueEntry, type InsertRevenueEntry,
   type CheckIn, type InsertCheckIn,
 } from "@shared/schema";
 
@@ -46,17 +45,7 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   acknowledgeNotification(id: string): Promise<void>;
 
-  // Revenue Tracking
-  getRevenueEntries(userId: string, startDate?: Date, endDate?: Date): Promise<RevenueEntry[]>;
-  createRevenueEntry(entry: InsertRevenueEntry): Promise<RevenueEntry>;
-  updateRevenueEntry(id: string, updates: Partial<InsertRevenueEntry>): Promise<RevenueEntry>;
-  deleteRevenueEntry(id: string): Promise<void>;
-  getRevenueStats(userId: string, period: 'month' | 'quarter' | 'year'): Promise<{
-    totalIncome: number;
-    totalExpenses: number;
-    projectedIncome: number;
-    netRevenue: number;
-  }>;
+
 
   // Check-ins and Accountability
   getCheckIns(userId: string, completed?: boolean): Promise<CheckIn[]>;
@@ -265,90 +254,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(notifications.id, id));
   }
 
-  // Revenue Tracking Methods
-  async getRevenueEntries(userId: string, startDate?: Date, endDate?: Date): Promise<RevenueEntry[]> {
-    if (startDate && endDate) {
-      return await db.select().from(revenueEntries)
-        .where(and(
-          eq(revenueEntries.userId, userId),
-          gte(revenueEntries.date, startDate),
-          lte(revenueEntries.date, endDate)
-        ))
-        .orderBy(desc(revenueEntries.date));
-    }
-    
-    return await db.select().from(revenueEntries)
-      .where(eq(revenueEntries.userId, userId))
-      .orderBy(desc(revenueEntries.date));
-  }
 
-  async createRevenueEntry(entry: InsertRevenueEntry): Promise<RevenueEntry> {
-    const [revenueEntry] = await db
-      .insert(revenueEntries)
-      .values(entry)
-      .returning();
-    return revenueEntry;
-  }
-
-  async updateRevenueEntry(id: string, updates: Partial<InsertRevenueEntry>): Promise<RevenueEntry> {
-    const [revenueEntry] = await db
-      .update(revenueEntries)
-      .set(updates)
-      .where(eq(revenueEntries.id, id))
-      .returning();
-    return revenueEntry;
-  }
-
-  async deleteRevenueEntry(id: string): Promise<void> {
-    await db.delete(revenueEntries).where(eq(revenueEntries.id, id));
-  }
-
-  async getRevenueStats(userId: string, period: 'month' | 'quarter' | 'year'): Promise<{
-    totalIncome: number;
-    totalExpenses: number;
-    projectedIncome: number;
-    netRevenue: number;
-  }> {
-    const now = new Date();
-    let startDate = new Date();
-
-    switch (period) {
-      case 'month':
-        startDate.setMonth(now.getMonth() - 1);
-        break;
-      case 'quarter':
-        startDate.setMonth(now.getMonth() - 3);
-        break;
-      case 'year':
-        startDate.setFullYear(now.getFullYear() - 1);
-        break;
-    }
-
-    const [stats] = await db
-      .select({
-        totalIncome: sum(sql`CASE WHEN ${revenueEntries.type} = 'income' THEN ${revenueEntries.amount} ELSE 0 END`).mapWith(Number),
-        totalExpenses: sum(sql`CASE WHEN ${revenueEntries.type} = 'expense' THEN ${revenueEntries.amount} ELSE 0 END`).mapWith(Number),
-        projectedIncome: sum(sql`CASE WHEN ${revenueEntries.type} = 'projection' THEN ${revenueEntries.amount} ELSE 0 END`).mapWith(Number),
-      })
-      .from(revenueEntries)
-      .where(
-        and(
-          eq(revenueEntries.userId, userId),
-          gte(revenueEntries.date, startDate)
-        )
-      );
-
-    const totalIncome = stats?.totalIncome || 0;
-    const totalExpenses = stats?.totalExpenses || 0;
-    const projectedIncome = stats?.projectedIncome || 0;
-
-    return {
-      totalIncome,
-      totalExpenses,
-      projectedIncome,
-      netRevenue: totalIncome - totalExpenses,
-    };
-  }
 
   // Check-in Methods
   async getCheckIns(userId: string, completed?: boolean): Promise<CheckIn[]> {
@@ -429,7 +335,6 @@ export class DatabaseStorage implements IStorage {
 
   async getDailyOverview(userId: string, date: Date): Promise<{
     taskCount: number;
-    potentialRevenue: number;
     urgentTasks: number;
     completedTasks: number;
     overdueCheckIns: number;
@@ -443,7 +348,6 @@ export class DatabaseStorage implements IStorage {
     const [overview] = await db
       .select({
         taskCount: count(tasks.id),
-        potentialRevenue: sum(tasks.revenueImpact),
       })
       .from(tasks)
       .where(
@@ -486,7 +390,6 @@ export class DatabaseStorage implements IStorage {
 
     return {
       taskCount: overview.taskCount || 0,
-      potentialRevenue: Number(overview.potentialRevenue) || 0,
       urgentTasks: urgentCount.count || 0,
       completedTasks: completedCount.count || 0,
       overdueCheckIns: overdueCheckInsCount.length,
