@@ -1,0 +1,7 @@
+{
+  "name": "MindAid Dev",
+  "build": { "dockerfile": "Dockerfile" },
+  "forwardPorts": [3000,4000],
+  "postCreateCommand": "pnpm install",
+  "remoteUser": "node"
+}
